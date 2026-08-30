@@ -4,14 +4,14 @@ steps:
     args:
       - 'build'
       - '-t'
-      - 'asia-southeast2-docker.pkg.dev/$project-2cd93730-d9d7-41ee-820/katalog-images/nextjs-app:latest'
+      - 'asia-southeast2-docker.pkg.dev/project-2cd93730-d9d7-41ee-820/katalog-images/nextjs-app:latest'
       - '.'
 
   # 2. Push image ke Artifact Registry
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
-      - 'asia-southeast2-docker.pkg.dev/$project-2cd93730-d9d7-41ee-820/katalog-images/nextjs-app:latest'
+      - 'asia-southeast2-docker.pkg.dev/project-2cd93730-d9d7-41ee-820/katalog-images/nextjs-app:latest'
 
   # 3. SSH ke VM, pull image terbaru, restart container nextjs
   - name: 'gcr.io/cloud-builders/gcloud'
@@ -25,7 +25,7 @@ steps:
           --command="cd ~/app && docker compose pull nextjs && docker compose up -d nextjs"
 
 images:
-  - 'asia-southeast2-docker.pkg.dev/$project-2cd93730-d9d7-41ee-820/katalog-images/nextjs-app'
+  - 'asia-southeast2-docker.pkg.dev/project-2cd93730-d9d7-41ee-820/katalog-images/nextjs-app'
 
 options:
   logging: CLOUD_LOGGING_ONLY
