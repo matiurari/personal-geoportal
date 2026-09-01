@@ -85,7 +85,7 @@ function createViewerCesium(container) {
   return viewer;
 }
 
-function tambahkanKonten3D(viewer) {
+function addContent3D(viewer) {
   add3DTileset(
     viewer,
     {
@@ -116,7 +116,6 @@ export default function CesiumViewer() {
   const containerRef = useRef(null);
   const viewerRef = useRef(null);
   const [status, setStatus] = useState('memuat');
-  const [pesanError, setPesanError] = useState('');
 
   useEffect(() => {
     LoadCesium(
@@ -133,7 +132,9 @@ export default function CesiumViewer() {
 
     try {
       viewerRef.current = createViewerCesium(containerRef.current);
-      tambahkanKonten3D(viewerRef.current);
+
+      addContent3D(viewerRef.current);
+      
     } catch (err) {
       console.error('Cesium init error:', err);
       setPesanError('Gagal membuat peta. Cek console untuk detail.');
@@ -146,9 +147,6 @@ export default function CesiumViewer() {
     };
   }, [status]);
 
-  if (status === 'error') {
-    return <p style={{ padding: 20, color: 'red' }}>{pesanError}</p>;
-  }
 
   return <div ref={containerRef} style={{ width: '100%', height: '100vh' }} />;
 }
