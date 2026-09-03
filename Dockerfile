@@ -5,6 +5,7 @@ WORKDIR /app
 # Copy hanya file dependency dulu supaya layer ini di-cache
 # (tidak perlu install ulang tiap kali ada perubahan kode)
 COPY package.json package-lock.json* ./
+COPY prisma ./prisma/
 RUN npm ci
 
 # ---- Stage 2: Build aplikasi ----
