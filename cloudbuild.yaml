@@ -23,7 +23,7 @@ steps:
           --zone=asia-southeast2-b \
           --tunnel-through-iap \
           --quiet \
-          --command="gcloud auth configure-docker asia-southeast2-docker.pkg.dev --quiet && cd /home/matiurari0/app/personal-geoportal && docker compose pull nextjs && docker compose up -d nextjs"
+          --command="gcloud auth configure-docker asia-southeast2-docker.pkg.dev --quiet && cd /home/matiurari0/app && docker compose pull nextjs && docker compose up -d nextjs"
 
 images:
   - 'asia-southeast2-docker.pkg.dev/project-2cd93730-d9d7-41ee-820/katalog-images/nextjs-app:latest'
