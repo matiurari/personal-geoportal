@@ -4,11 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start"
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@prisma/client": "^6.19.3",
     "@tmcw/togeojson": "^7.1.2",
+    "bcryptjs": "^3.0.3",
     "cesium": "^1.144.0",
     "georaster": "^1.6.0",
     "georaster-layer-for-leaflet": "^4.1.2",
@@ -17,5 +20,8 @@
     "next": "16.3.3",
     "react": "19.2.8",
     "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "prisma": "^6.19.3"
   }
 }
