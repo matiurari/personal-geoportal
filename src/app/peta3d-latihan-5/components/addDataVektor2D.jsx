@@ -33,6 +33,10 @@ export default function addDataVektor2D(viewer, opsi, selesai) {
           entity.polyline.width = lebarGaris;
           entity.polyline.clampToGround = nempelTerrain;
         }
+
+        if (entity.polygon) {
+          entity.polygon.classificationType = Cesium.ClassificationType.TERRAIN;
+        }
       });
 
       if (otomatisZoom) {

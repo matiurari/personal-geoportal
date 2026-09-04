@@ -118,35 +118,48 @@ function addContent3D(viewer) {
         nama: 'Bangunan Kotak (Contoh GLB)',
       });
 
-      addDataVektor2D(
-        viewer,
-        {
-          url: '/portal/data/jalan.geojson',
-          nama: 'Jaringan Jalan',
-          warna: Cesium.Color.YELLOW,
-          lebarGaris: 4,
-          otomatisZoom: false,
-        },
-        function (jaringanJalan) {
-          addPanelLayer3D(
+    addDataVektor2D(
+      viewer,
+      {
+        url: '/portal/data/jalan.geojson',
+        nama: 'Jaringan Jalan',
+        warnaGaris: Cesium.Color.YELLOW,
+        lebarGaris: 4,
+        otomatisZoom: false,
+      },
+      function (jaringanJalan) {
+        addDataVektor2D(
+          viewer,
+          {
+            url: '/portal/data/batas_admin.geojson',
+            nama: 'Batas Administrasi',
+            warnaArea: Cesium.Color.CYAN.withAlpha(0.4),
+            otomatisZoom: false,
+          },
+      function (batasAdmin) {
+        addPanelLayer3D(
             viewer,
             {
               'Gedung 3D (OSM Buildings)': gedung3D,
               'Bangunan Kotak (Contoh GLB)': modelBox,
               'Jaringan Jalan': jaringanJalan,
+              'Batas Administrasi': batasAdmin,
             },
-            kontrolTerrain
-          );
+            kontrolTerrain,
+            );
 
-          kontrolKamera.terbangKe(
-            LOKASI_AWAL.latitude,
-            LOKASI_AWAL.longitude,
-            800,
-            20,
-            -40
-          );
-        }
-      );
+            kontrolKamera.terbangKe(
+              LOKASI_AWAL.latitude,
+              LOKASI_AWAL.longitude,
+              800,
+              20,
+              -40
+            );
+          }
+        );
+
+      }
+    );
     }
   );
 
