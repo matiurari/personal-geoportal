@@ -20,9 +20,11 @@
     "cesium": "^1.144.0",
     "georaster": "^1.6.0",
     "georaster-layer-for-leaflet": "^4.1.2",
+    "jsonwebtoken": "^9.0.3",
     "leaflet": "^1.9.4",
     "leaflet-kml": "^1.0.1",
     "next": "16.3.3",
+    "next-auth": "^4.24.15",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },

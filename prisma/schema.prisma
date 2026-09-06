@@ -12,4 +12,5 @@ model users {
   email     String? @db.VarChar
   password  String? @db.VarChar
   is_active String? @db.VarChar
+  role      String? @db.VarChar
 }

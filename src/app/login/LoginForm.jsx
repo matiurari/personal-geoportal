@@ -1,10 +1,11 @@
 "use client";
 
-import { Alert, Box, Button, CircularProgress, IconButton, InputAdornment, Paper, TextField, Typography } from '@mui/material'
+import { Alert, Button, CircularProgress, IconButton, InputAdornment, Paper, TextField, Typography } from '@mui/material'
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react'
 import { palette } from "../../theme/theme"
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { signIn } from 'next-auth/react';
 
 const LoginForm = () => {
     const router = useRouter();
@@ -26,28 +27,21 @@ const LoginForm = () => {
 
         setLoading(true);
 
-        try {
-            const res = await fetch("/portal/api/users/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
-            });
+        const result = await signIn("geoportal-credential", {
+            email,
+            password,
+            redirect: false,
+        });
 
-            const data = await res.json();
-
-            if (!res.ok) {
-                setError(data.message || "Email atau password salah!");
-                setLoading(false);
-                return;
-            }
-
-            // Login sukses — arahkan ke halaman dashboard (sesuaikan path-nya)
-            router.push("/dashboard");
-        } catch (err) {
-            setError("Terjadi kesalahan server. Silahkan coba lagi.");
+        if (result?.error) {
+            setError(result.error);
             setLoading(false);
+            return;
         }
+
+        router.push("/internal");
     };
+
     return (
         <Paper
             elevation={0}
