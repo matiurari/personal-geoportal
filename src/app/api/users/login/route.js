@@ -36,6 +36,16 @@ export async function POST(request) {
       );
     }
 
+    // 3. Check apakah akun aktif
+    const isUserActive = parseInt(user.is_active) === 1;
+
+    if (!isUserActive) {
+      return NextResponse.json(
+        { message: "Akun anda belum di aktivasi. Silahkan request aktivasi ke email arimatiur@gmail.com" },
+        { status: 403 }
+      )
+    }
+
     return NextResponse.json(
       {
         message: "Login berhasil",

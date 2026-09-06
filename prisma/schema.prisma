@@ -3,13 +3,13 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model users {
-  user_id  String  @id(map: "users_pk") @db.VarChar
-  email    String? @db.VarChar
-  password String? @db.VarChar
+  user_id   String  @id(map: "users_pk") @db.VarChar
+  email     String? @db.VarChar
+  password  String? @db.VarChar
+  is_active String? @db.VarChar
 }
