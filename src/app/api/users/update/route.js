@@ -24,14 +24,6 @@ export async function POST(request) {
         return NextResponse.json({ message: "User tidak ditemukan" }, { status: 404 });
     }
 
-    // Validasi apakah email sudah digunakan oleh user lain
-    const isAlreadyExists = await db.users.findFirst({
-        where: { email: data.email, user_id: { not: data.user_id } },
-    });
-    if (isAlreadyExists) {
-        return NextResponse.json({ message: "Email sudah terdaftar" }, { status: 400 });
-    }
-
     try {
         const user = await db.users.update({
             where: { user_id: data.user_id },
