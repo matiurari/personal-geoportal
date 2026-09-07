@@ -11,6 +11,6 @@ model users {
   user_id   String  @id(map: "users_pk") @db.VarChar
   email     String? @db.VarChar
   password  String? @db.VarChar
-  is_active String? @db.VarChar
   role      String? @db.VarChar
+  is_active Boolean @default(false)
 }
