@@ -1,12 +1,27 @@
-import { Box, Toolbar } from "@mui/material";
+import { Box } from "@mui/material";
+
 import Navbar from "./components/Navbar";
 
 export default function WebPublicLayout({ children }) {
   return (
-    <Box>
+    <Box
+      sx={{
+        width: "100%",
+        minHeight: "100vh",
+        position: "relative",
+      }}
+    >
       <Navbar />
-      <Toolbar />
-      <Box component="main">{children}</Box>
+
+      <Box
+        component="main"
+        sx={{
+          width: "100%",
+          minHeight: "100vh",
+        }}
+      >
+        {children}
+      </Box>
     </Box>
   );
 }
