@@ -63,16 +63,7 @@ export default function Search({ L, map, markerRef }) {
   }, [map, markerRef]);
 
   return (
-    <Box
-      sx={{
-        position: "absolute",
-        top: 16,
-        left: 16,
-        right: { xs: 16, sm: "auto" },
-        width: { xs: "auto", sm: 380 },
-        zIndex: 1000,
-      }}
-    >
+    <Box sx={{ width: { xs: 280, sm: 220, md: 320 }, zIndex: 1000 }}>
       <Paper
         elevation={3}
         sx={{
@@ -130,7 +121,7 @@ export default function Search({ L, map, markerRef }) {
       </Fade>
 
       {searching && (
-        <Box sx={{ mt: 0.5, fontSize: 11, color: "#F4EFE2", opacity: 0.8 }}>
+        <Box sx={{ mt: 0.5, fontSize: 11, color: "#16241F", opacity: 0.7 }}>
           Mencari...
         </Box>
       )}
