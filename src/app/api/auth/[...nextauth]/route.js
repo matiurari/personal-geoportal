@@ -18,7 +18,7 @@ export const authOptions = {
                     const accessToken = signAccessToken(user); // buat access token
 
                     return {
-                        id: user.id,
+                        user_id: user.user_id,
                         email: user.email,
                         role: user.role,
                         accessToken,
@@ -35,7 +35,7 @@ export const authOptions = {
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
-                token.id = user.id;
+                token.user_id = user.user_id;
                 token.email = user.email;
                 token.role = user.role;
                 token.accessToken = user.accessToken;
@@ -43,7 +43,7 @@ export const authOptions = {
             return token;
         },
         async session({ session, token }) {
-            session.user.id = token.id;
+            session.user.user_id = token.user_id;
             session.user.email = token.email;
             session.user.role = token.role;
             session.accessToken = token.accessToken;

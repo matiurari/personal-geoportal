@@ -8,11 +8,11 @@ datasource db {
 }
 
 model users {
-  user_id   String   @id(map: "users_pk") @db.VarChar
-  email     String?  @db.VarChar
-  password  String?  @db.VarChar
-  is_active Boolean?
-  role      String?  @db.VarChar
+  user_id   String  @id(map: "users_pk") @db.VarChar
+  email     String? @db.VarChar
+  password  String? @db.VarChar
+  role      String? @db.VarChar
+  is_active Boolean @default(false)
 }
 
 model katalog_data_2d {
@@ -22,4 +22,5 @@ model katalog_data_2d {
   is_editable Boolean?
   wms_url     String?  @db.VarChar
   wfs_url     String?  @db.VarChar
+  author      String?  @db.VarChar
 }

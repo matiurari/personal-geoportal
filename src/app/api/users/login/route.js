@@ -20,7 +20,7 @@ export async function POST(request) {
       {
         message: "Login berhasil",
         access_token: accessToken,
-        user: { id: user.id, email: user.email, role: user.role },
+        user: { user_id: user.user_id, email: user.email, role: user.role },
       },
       { status: 200 }
     );

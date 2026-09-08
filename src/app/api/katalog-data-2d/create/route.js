@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { Pool } from "pg";
 import crypto from "crypto";
 import { db } from "../../../../../lib/db"; // Pastikan Prisma Client kamu di-import di sini
+import { requireAuth } from "../../../../../lib/auth/verifyBearerToken";
 
 const pool = new Pool({
     host: process.env.POSTGIS_HOST,
@@ -14,6 +15,12 @@ const pool = new Pool({
 const DB_SCHEMA = process.env.POSTGIS_SCHEMA;
 
 export async function POST(request) {
+    // 1. Validasi Autentikasi (Tambahkan parameter `request`)
+    const { payload, error, status } = requireAuth(request, "admin");
+    console.log(payload);
+    if (error) {
+        return NextResponse.json({ message: error }, { status });
+    }
     const client = await pool.connect();
 
     try {
@@ -40,7 +47,7 @@ export async function POST(request) {
             return NextResponse.json({ error: "GeoJSON kosong" }, { status: 400 });
         }
 
-        // 1. Ambil nama properti GeoJSON & ubah jadi lowercase
+        // 2. Ambil nama properti GeoJSON & ubah jadi lowercase
         const rawSampleProps = features[0]?.properties || {};
         const propMap = {};
         Object.keys(rawSampleProps).forEach(rawKey => {
@@ -50,7 +57,7 @@ export async function POST(request) {
 
         const cleanPropKeys = Object.keys(propMap);
 
-        // 2. Buat Nama Tabel Unik di PostGIS
+        // 3. Buat Nama Tabel Unik di PostGIS
         const uniqueId = crypto.randomUUID().slice(0, 8);
         const tableName = `${layerNameInput.replace(/[^a-zA-Z0-9_]/g, "_")}_${uniqueId}`.toLowerCase();
 
@@ -60,7 +67,7 @@ export async function POST(request) {
             ? cleanPropKeys.map(k => `"${k}" TEXT`).join(", ") + ","
             : "";
 
-        // 3. Buat Tabel di PostGIS Schema "gis"
+        // 4. Buat Tabel di PostGIS Schema "gis"
         await client.query(`
       CREATE TABLE "${DB_SCHEMA}"."${tableName}" (
         id SERIAL PRIMARY KEY,
@@ -69,7 +76,7 @@ export async function POST(request) {
       );
     `);
 
-        // 4. Insert Data Geometri ke PostGIS
+        // 5. Insert Data Geometri ke PostGIS
         for (const feature of features) {
             const props = feature.properties || {};
             const colNames = ["the_geom"];
@@ -110,7 +117,7 @@ export async function POST(request) {
 
         const { minx, miny, maxx, maxy } = bboxResult.rows[0];
 
-        // 5. Publish Ke GeoServer
+        // 6. Publish Ke GeoServer
         const geoserverUrl = process.env.GEOSERVER_URL;
         const workspace = process.env.GEOSERVER_WORKSPACE;
         const existingDatastore = process.env.GEOSERVER_POSTGIS_DATASTORE;
@@ -152,11 +159,11 @@ export async function POST(request) {
             throw new Error(`Gagal Publish ke GeoServer: ${publishErr}`);
         }
 
-        // 6. Tentukan URL WMS dan WFS
+        // 7. Tentukan URL WMS dan WFS
         const wmsUrl = `${geoserverUrl}/${workspace}/wms`;
         const wfsUrl = `${geoserverUrl}/${workspace}/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=${workspace}:${tableName}&outputFormat=application/json`;
 
-        // 7. Simpan Record ke Tabel katalog_data_2d
+        // 8. Simpan Record ke Tabel katalog_data_2d
         // Catatan: Sesuaikan nama model Prisma kamu (misal: db.katalogData2D atau db.katalog_data_2d)
         const newKatalogData = await db.katalog_data_2d.create({
             data: {
@@ -166,6 +173,7 @@ export async function POST(request) {
                 is_editable: isEditable,
                 wms_url: wmsUrl,
                 wfs_url: wfsUrl,
+                author: payload.user_id
             },
         });
 
