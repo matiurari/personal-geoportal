@@ -4,16 +4,16 @@ import {
   Drawer, List, ListItemButton, ListItemIcon, ListItemText, Toolbar, Box, Typography, Avatar,
 } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
-import StorageIcon from "@mui/icons-material/Storage";
+import LayersIcon from "@mui/icons-material/Layers";
+import ViewInArIcon from "@mui/icons-material/ViewInAr";
 import MapIcon from "@mui/icons-material/Map";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 
 const drawerWidth = 260;
 
 const menuItems = [
-  { label: "Dashboard", path: "/web-internal", icon: <DashboardIcon /> },
-  { label: "Katalog Data", path: "/web-internal/katalog-data", icon: <StorageIcon /> },
-  { label: "Katalog Peta", path: "/web-internal/katalog-peta", icon: <MapIcon /> },
+  { label: "Katalog Data 2D", path: "/web-internal/katalog-data-2d", icon: <LayersIcon /> },
+  { label: "Katalog Data 3D", path: "/web-internal/katalog-data-3d", icon: <ViewInArIcon /> },
   { label: "Kelola Akun", path: "/web-internal/kelola-akun", icon: <ManageAccountsIcon /> },
 ];
 
