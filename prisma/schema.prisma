@@ -13,6 +13,9 @@ model users {
   password  String? @db.VarChar
   role      String? @db.VarChar
   is_active Boolean @default(false)
+
+  // Relasi balik ke katalog_data_2d
+  katalog_2d katalog_data_2d[]
 }
 
 model katalog_data_2d {
@@ -23,4 +26,7 @@ model katalog_data_2d {
   wms_url     String?  @db.VarChar
   wfs_url     String?  @db.VarChar
   author      String?  @db.VarChar
+
+  // Definisi relasi foreign key
+  user_author users?   @relation(fields: [author], references: [user_id])
 }

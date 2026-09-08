@@ -159,34 +159,106 @@ export async function POST(request) {
             throw new Error(`Gagal Publish ke GeoServer: ${publishErr}`);
         }
 
+        // 6. Terapkan security layer
+        await applyGeoServerLayerSecurity({
+            geoserverUrl,
+            workspace,
+            tableName,
+            akses,
+            isEditable,
+            auth,
+        });
+
         // 7. Tentukan URL WMS dan WFS
         const wmsUrl = `${geoserverUrl}/${workspace}/wms`;
         const wfsUrl = `${geoserverUrl}/${workspace}/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=${workspace}:${tableName}&outputFormat=application/json`;
 
-        // 8. Simpan Record ke Tabel katalog_data_2d
-        // Catatan: Sesuaikan nama model Prisma kamu (misal: db.katalogData2D atau db.katalog_data_2d)
-        const newKatalogData = await db.katalog_data_2d.create({
+        // 8. Simpan Record ke Tabel katalog_data_2d & Include Data Author
+        const createdRecord = await db.katalog_data_2d.create({
             data: {
-                data_2d_id: crypto.randomUUID(), // PK berupa varchar
+                data_2d_id: crypto.randomUUID(),
                 layer_name: `${workspace}:${tableName}`,
                 akses: akses,
                 is_editable: isEditable,
                 wms_url: wmsUrl,
                 wfs_url: wfsUrl,
-                author: payload.user_id
+                author: payload.user_id, // Tetap gunakan user_id sebagai FK
+            },
+            select: {
+                data_2d_id: true,
+                layer_name: true,
+                akses: true,
+                is_editable: true,
+                wms_url: true,
+                wfs_url: true,
+                user_author: {
+                    select: {
+                        email: true,
+                    },
+                },
             },
         });
+
+        // Transformasi response agar field 'author' langsung berisi string email
+        const newKatalogData = {
+            data_2d_id: createdRecord.data_2d_id,
+            layer_name: createdRecord.layer_name,
+            akses: createdRecord.akses,
+            is_editable: createdRecord.is_editable,
+            wms_url: createdRecord.wms_url,
+            wfs_url: createdRecord.wfs_url,
+            author: createdRecord.user_author?.email || null,
+        };
 
         return NextResponse.json({
             success: true,
             message: `Layer ${layerNameInput} berhasil disimpan ke Katalog & GeoServer!`,
             data: newKatalogData,
         });
-
     } catch (error) {
         await client.query("ROLLBACK");
         return NextResponse.json({ error: error.message }, { status: 500 });
     } finally {
         client.release();
+    }
+}
+
+
+async function applyGeoServerLayerSecurity({ geoserverUrl, workspace, tableName, akses, isEditable, auth }) {
+    // Tentukan role yang diberi izin Read & Write
+    // Jika akses 'private', hanya ADMIN yang bisa Read. Jika 'public', ROLE_ANONYMOUS & ADMIN bisa Read.
+    const readRoles = akses === "private" ? ["ADMIN"] : ["ROLE_ANONYMOUS", "ADMIN"];
+
+    // Jika isEditable = true, beri akses Write ke ADMIN (atau role editor sesuai kebutuhan aplikasi)
+    const writeRoles = isEditable ? ["ADMIN"] : [];
+
+    const layerPattern = `${workspace}.${tableName}`;
+
+    // Rule Read
+    if (readRoles.length > 0) {
+        await fetch(`${geoserverUrl}/rest/security/acl/layers`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Basic ${auth}`,
+            },
+            body: JSON.stringify({
+                [`${layerPattern}.r`]: readRoles.join(","),
+            }),
+        });
+    }
+
+    // Rule Write
+    if (writeRoles.length > 0) {
+        await fetch(`${geoserverUrl}/rest/security/acl/layers`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Basic ${auth}`,
+            },
+            body: JSON.stringify({
+                [`${layerPattern}.w`]: writeRoles.join(","),
+            }),
+        });
     }
 }
