@@ -1,21 +1,174 @@
 "use client";
-import { AppBar, Toolbar, Typography, Avatar, Box } from "@mui/material";
+
+import React from "react";
+
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Avatar,
+  Box,
+  IconButton,
+  Badge,
+  Tooltip,
+} from "@mui/material";
+
+import PublicIcon from "@mui/icons-material/Public";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 
 export default function Topbar() {
   return (
     <AppBar
       position="fixed"
-      sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, bgcolor: "#fff", color: "#000" }}
-      elevation={1}
+      elevation={0}
+      sx={{
+        zIndex: (theme) => theme.zIndex.drawer + 1,
+        bgcolor: "#FFFFFF",
+        color: "#1E293B",
+        borderBottom: "1px solid #E5E7EB",
+      }}
     >
-      <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-        <Typography variant="h6" noWrap>
-          Web Internal
-        </Typography>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Avatar sx={{ width: 32, height: 32 }}>U</Avatar>
+      <Toolbar
+        sx={{
+          minHeight: "64px !important",
+          display: "flex",
+          justifyContent: "space-between",
+          px: {
+            xs: 2,
+            sm: 3,
+          },
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1.2,
+          }}
+        >
+          <Box
+            sx={{
+              width: 38,
+              height: 38,
+              borderRadius: 2,
+              bgcolor: "#EEF2FF",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              position: "relative",
+              flexShrink: 0,
+            }}
+          >
+            <PublicIcon
+              sx={{
+                fontSize: 26,
+                color: "#4F46E5",
+              }}
+            />
+
+            <LocationOnIcon
+              sx={{
+                position: "absolute",
+                fontSize: 14,
+                color: "#EF4444",
+                bottom: 3,
+                right: 3,
+              }}
+            />
+          </Box>
+
+          <Box>
+            <Typography
+              variant="body1"
+              noWrap
+              sx={{
+                fontWeight: 700,
+                fontSize: 16,
+                lineHeight: 1.2,
+                color: "#1E293B",
+              }}
+            >
+              GeoPortal
+            </Typography>
+
+            <Typography
+              variant="caption"
+              sx={{
+                display: {
+                  xs: "none",
+                  sm: "block",
+                },
+                fontSize: 11,
+                color: "#94A3B8",
+                lineHeight: 1.2,
+              }}
+            >
+              Web Internal
+            </Typography>
+          </Box>
+        </Box>
+
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+          }}
+        >
+          <Tooltip title="Notifikasi">
+            <IconButton
+              size="small"
+              sx={{
+                width: 36,
+                height: 36,
+                color: "#64748B",
+                "&:hover": {
+                  bgcolor: "#F1F5F9",
+                },
+              }}
+            >
+              <Badge
+                color="error"
+                variant="dot"
+                overlap="circular"
+              >
+                <NotificationsNoneIcon fontSize="small" />
+              </Badge>
+            </IconButton>
+          </Tooltip>
+
+          <Box
+            sx={{
+              width: "1px",
+              height: 24,
+              bgcolor: "#E5E7EB",
+              mx: 0.5,
+            }}
+          />
+
+          <Tooltip title="Profile">
+            <Avatar
+              sx={{
+                width: 32,
+                height: 32,
+                bgcolor: "#4F46E5",
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "0.2s",
+                "&:hover": {
+                  bgcolor: "#4338CA",
+                  transform: "scale(1.05)",
+                },
+              }}
+            >
+              U
+            </Avatar>
+          </Tooltip>
         </Box>
       </Toolbar>
     </AppBar>
   );
 }
+

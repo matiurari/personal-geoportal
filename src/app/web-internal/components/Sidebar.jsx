@@ -1,7 +1,7 @@
 "use client";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  Drawer, List, ListItemButton, ListItemIcon, ListItemText, Toolbar, Divider,
+  Drawer, List, ListItemButton, ListItemIcon, ListItemText, Toolbar, Box, Typography, Avatar,
 } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import StorageIcon from "@mui/icons-material/Storage";
@@ -27,22 +27,45 @@ export default function Sidebar() {
       sx={{
         width: drawerWidth,
         flexShrink: 0,
-        [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: "border-box" },
+        [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: "border-box", borderRight: "1px solid #EEF0F4" },
       }}
     >
-      <Toolbar />
-      <Divider />
-      <List>
-        {menuItems.map((item) => (
-          <ListItemButton
-            key={item.path}
-            selected={pathname === item.path}
-            onClick={() => router.push(item.path)}
-          >
-            <ListItemIcon>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.label} />
-          </ListItemButton>
-        ))}
+      <Toolbar sx={{ px: 3 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Avatar sx={{ bgcolor: "#4F46E5", width: 34, height: 34, fontSize: 16 }}>WI</Avatar>
+          <Typography variant="subtitle1" fontWeight={700}>Web Internal</Typography>
+        </Box>
+      </Toolbar>
+      <List sx={{ mt: 1 }}>
+        {menuItems.map((item) => {
+          const active = pathname === item.path;
+          return (
+            <ListItemButton
+              key={item.path}
+              selected={active}
+              onClick={() => router.push(item.path)}
+              sx={{
+                borderRadius: 2,
+                mx: 1,
+                mb: 0.3,
+                "&.Mui-selected": {
+                  bgcolor: "#EEF2FF",
+                  color: "#4F46E5",
+                  "& .MuiListItemIcon-root": { color: "#4F46E5" },
+                  "&:hover": { bgcolor: "#E0E7FF" },
+                },
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 36 }}>{item.icon}</ListItemIcon>
+              <ListItemText
+                primary={item.label}
+                slotProps={{
+                  primary: { fontSize: 14, fontWeight: active ? 600 : 500 },
+                }}
+              />
+            </ListItemButton>
+          );
+        })}
       </List>
     </Drawer>
   );
