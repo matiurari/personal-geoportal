@@ -17,21 +17,12 @@ const BASEMAPS = {
   },
 };
 
-
-export default function Basemap({
-  L,
-  map,
-  tileLayerRef,
-  activeBasemap,
-  onChangeBasemap,
-  monoClassName,
-}) {
+export default function Basemap({ L, map, tileLayerRef, activeBasemap, onChangeBasemap }) {
   const [basemapOpen, setBasemapOpen] = useState(false);
 
   const handleChangeBasemap = useCallback(
     (key) => {
       if (!L || !map) return;
-
       if (tileLayerRef.current) {
         map.removeLayer(tileLayerRef.current);
       }
@@ -40,7 +31,6 @@ export default function Basemap({
         attribution: basemap.attribution,
         maxZoom: 19,
       }).addTo(map);
-
       onChangeBasemap(key);
       setBasemapOpen(false);
     },
@@ -84,7 +74,6 @@ export default function Basemap({
             <Box
               key={key}
               onClick={() => handleChangeBasemap(key)}
-              className={monoClassName}
               sx={{
                 px: 2,
                 py: 1.2,

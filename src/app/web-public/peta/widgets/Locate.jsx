@@ -4,24 +4,20 @@ import { useCallback, useState } from "react";
 import { Paper, IconButton, Tooltip } from "@mui/material";
 import MyLocationIcon from "@mui/icons-material/MyLocation";
 
-
 export default function Locate({ L, map, userMarkerRef }) {
   const [locating, setLocating] = useState(false);
 
   const handleLocateMe = useCallback(() => {
     if (!L || !map) return;
-
     if (!navigator.geolocation) {
       alert("Geolocation tidak didukung oleh browser ini.");
       return;
     }
-
     setLocating(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const { latitude, longitude } = pos.coords;
         map.flyTo([latitude, longitude], 17, { duration: 1 });
-
         if (userMarkerRef.current) {
           map.removeLayer(userMarkerRef.current);
         }

@@ -2,17 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Box } from "@mui/material";
-import { Inter, IBM_Plex_Mono } from "next/font/google";
 
-import SearchBox from "../peta/widgets/SearchBox";
 import Home from "../peta/widgets/Home";
 import Locate from "../peta/widgets/Locate";
 import Basemap from "../peta/widgets/Basemap";
+import Search from "../peta/widgets/Search";
 
-const inter = Inter({ subsets: ["latin"], weight: ["400", "500"] });
-const mono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "500"] });
 
-const HOME_COORDS = { lat:  -6.1754, lng:  106.8272, zoom: 16 };
+const HOME_COORDS = { lat: -6.1754, lng: 106.8272, zoom: 16 };
 
 const BASEMAPS = {
   satelit: {
@@ -91,21 +88,12 @@ export default function MapComponent() {
   const map = ready ? mapRef.current : null;
 
   return (
-    <Box
-      className={inter.className}
-      sx={{ position: "relative", width: "100%", height: "calc(100vh - 64px)" }}
-    >
+    <Box sx={{ position: "relative", width: "100%", height: "calc(100vh - 64px)" }}>
       {/* MAP CONTAINER */}
       <Box ref={mapContainerRef} sx={{ width: "100%", height: "100%" }} />
 
-      {/* SEARCH BOX */}
-      <SearchBox
-        L={L}
-        map={map}
-        markerRef={markerRef}
-        fontClassName={mono.className}
-        monoClassName={mono.className}
-      />
+      {/* SEARCH  */}
+      <Search L={L} map={map} markerRef={markerRef} />
 
       {/* HOME, LOKASI TERKINI, BASEMAP */}
       <Box
@@ -120,16 +108,13 @@ export default function MapComponent() {
         }}
       >
         <Home map={map} markerRef={markerRef} />
-
         <Locate L={L} map={map} userMarkerRef={userMarkerRef} />
-
         <Basemap
           L={L}
           map={map}
           tileLayerRef={tileLayerRef}
           activeBasemap={activeBasemap}
           onChangeBasemap={setActiveBasemap}
-          monoClassName={mono.className}
         />
       </Box>
     </Box>
