@@ -207,6 +207,8 @@ export default function Topbar() {
                   mt: 1,
                   minWidth: 200,
                   borderRadius: 2,
+                  bgcolor: "#FFFFFF",          
+                  color: "#1E293B",           
                   boxShadow: "0 8px 24px rgba(15,23,42,0.12)",
                 },
               },
@@ -216,16 +218,16 @@ export default function Topbar() {
               <Typography sx={{ fontWeight: 600, fontSize: 14, color: "#1E293B" }} noWrap>
                 {session?.user?.name || "User"}
               </Typography>
-              <Typography sx={{ fontSize: 12, color: "#94A3B8" }} noWrap>
+              <Typography sx={{ fontSize: 12, color: "#64748B" }} noWrap>
                 {session?.user?.email || ""}
               </Typography>
             </Box>
 
             <Divider />
 
-            <MenuItem onClick={handleCloseMenu}>
+            <MenuItem onClick={handleCloseMenu} sx={{ color: "#1E293B" }}>
               <ListItemIcon>
-                <PersonIcon fontSize="small" />
+                <PersonIcon fontSize="small" sx={{ color: "#1E293B" }} />
               </ListItemIcon>
               Profil Saya
             </MenuItem>
