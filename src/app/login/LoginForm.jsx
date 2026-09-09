@@ -39,7 +39,8 @@ const LoginForm = () => {
             return;
         }
 
-        router.push("/internal");
+        // arahkan ke folder route internal yang benar: /web-internal
+        router.push("/web-internal");
     };
 
     return (

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 
 import {
   AppBar,
@@ -11,13 +11,40 @@ import {
   IconButton,
   Badge,
   Tooltip,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  Divider,
+  CircularProgress,
 } from "@mui/material";
 
 import PublicIcon from "@mui/icons-material/Public";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
+import LogoutIcon from "@mui/icons-material/Logout";
+import PersonIcon from "@mui/icons-material/Person";
+
+import { signOut, useSession } from "next-auth/react";
 
 export default function Topbar() {
+  const { data: session } = useSession();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const open = Boolean(anchorEl);
+
+  const handleOpenMenu = (e) => setAnchorEl(e.currentTarget);
+  const handleCloseMenu = () => setAnchorEl(null);
+
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    await signOut({ callbackUrl: "/portal/web-public" });
+  };
+
+  const userInitial =
+    session?.user?.name?.charAt(0)?.toUpperCase() ||
+    session?.user?.email?.charAt(0)?.toUpperCase() ||
+    "U";
+
   return (
     <AppBar
       position="fixed"
@@ -147,8 +174,9 @@ export default function Topbar() {
             }}
           />
 
-          <Tooltip title="Profile">
+          <Tooltip title="Akun">
             <Avatar
+              onClick={handleOpenMenu}
               sx={{
                 width: 32,
                 height: 32,
@@ -163,12 +191,58 @@ export default function Topbar() {
                 },
               }}
             >
-              U
+              {userInitial}
             </Avatar>
           </Tooltip>
+
+          <Menu
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleCloseMenu}
+            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+            transformOrigin={{ vertical: "top", horizontal: "right" }}
+            slotProps={{
+              paper: {
+                sx: {
+                  mt: 1,
+                  minWidth: 200,
+                  borderRadius: 2,
+                  boxShadow: "0 8px 24px rgba(15,23,42,0.12)",
+                },
+              },
+            }}
+          >
+            <Box sx={{ px: 2, py: 1.2 }}>
+              <Typography sx={{ fontWeight: 600, fontSize: 14, color: "#1E293B" }} noWrap>
+                {session?.user?.name || "User"}
+              </Typography>
+              <Typography sx={{ fontSize: 12, color: "#94A3B8" }} noWrap>
+                {session?.user?.email || ""}
+              </Typography>
+            </Box>
+
+            <Divider />
+
+            <MenuItem onClick={handleCloseMenu}>
+              <ListItemIcon>
+                <PersonIcon fontSize="small" />
+              </ListItemIcon>
+              Profil Saya
+            </MenuItem>
+
+            <MenuItem onClick={handleLogout} disabled={loggingOut} sx={{ color: "#EF4444" }}>
+              <ListItemIcon>
+                {loggingOut ? (
+                  <CircularProgress size={16} sx={{ color: "#EF4444" }} />
+                ) : (
+                  <LogoutIcon fontSize="small" sx={{ color: "#EF4444" }} />
+                )}
+              </ListItemIcon>
+              {loggingOut ? "Keluar..." : "Logout"}
+            </MenuItem>
+          </Menu>
         </Box>
       </Toolbar>
     </AppBar>
   );
 }
-
