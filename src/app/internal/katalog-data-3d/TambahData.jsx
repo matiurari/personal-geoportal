@@ -1,7 +1,7 @@
 import { Box, Button, MenuItem, TextField } from "@mui/material";
 import UploadIcon from '@mui/icons-material/Upload';
 
-const TambahData = ({form}) => {
+const TambahData = ({ form, handleCloseCreate }) => {
     return (
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5, mt: 1 }}>
             <TextField
@@ -62,6 +62,10 @@ const TambahData = ({form}) => {
                 <MenuItem value="public">Public</MenuItem>
                 <MenuItem value="private">Private</MenuItem>
             </TextField>
+            <Box sx={{ display: "flex", flexDirection: "row", justifyContent: "flex-end", gap: "5px" }}>
+                <Button variant="contained" color="warning" onClick={handleCloseCreate}>Cancel</Button>
+                <Button variant="contained" color="info">Submit</Button>
+            </Box>
         </Box>
     )
 }
