@@ -41,18 +41,15 @@ export default function KatalogData3D({ data }) {
 
   useEffect(() => {
     if (!search.trim()) {
-      setFilteredData(data.data);
+      setFilteredData(data);
       return;
     }
     const query = search.toLowerCase();
-    const result = data.data.filter((item) => {
+    const result = data.filter((item) => {
       const namaMatch = item.nama?.toLowerCase().includes(query);
-      const userMatch =
-        item.users?.name?.toLowerCase().includes(query) ||
-        item.users?.username?.toLowerCase().includes(query);
-      return namaMatch || userMatch;
+      return namaMatch;
     });
-
+    console.log(result)
     setFilteredData(result);
   }, [search, data]);
 
@@ -75,7 +72,6 @@ export default function KatalogData3D({ data }) {
     setOpenPreview(false);
     setPreviewItem(null);
   };
-
   return (
     <Box sx={{ p: 1 }}>
       {/* Header Section */}
@@ -275,7 +271,7 @@ export default function KatalogData3D({ data }) {
           Tambah Layer Data 3D
         </DialogTitle>
         <DialogContent>
-          <TambahData form={form} setForm={setForm} handleCloseCreate={handleCloseCreate}/>
+          <TambahData form={form} setForm={setForm} handleCloseCreate={handleCloseCreate} />
         </DialogContent>
       </Dialog>
 

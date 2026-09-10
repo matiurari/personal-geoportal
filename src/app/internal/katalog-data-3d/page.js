@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import KatalogData3D from "./KatalogData3D";
 import getData from "./lib/data";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { Box } from "@mui/material";
 
 const page = async () => {
   const session = await getServerSession(authOptions);
