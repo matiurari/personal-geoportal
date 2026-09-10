@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import {
   Box, Typography, Paper, TextField, InputAdornment, Button, Dialog,
   DialogTitle, DialogContent, DialogActions,
@@ -12,6 +13,7 @@ import TambahData2D from "./TambahData2D";
 import ListData2D from "./ListData2D";
 
 export default function KatalogData2D() {
+  const { data: session } = useSession();
   const [search, setSearch] = useState("");
   const [openCreate, setOpenCreate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -33,7 +35,33 @@ export default function KatalogData2D() {
       confirmButtonColor: "#DC2626",
     });
     if (!confirm.isConfirmed) return;
-    // TODO: panggil API delete ke prod, lalu setRefreshKey((k) => k + 1)
+
+    const accessToken = session?.user?.access_token || session?.accessToken;
+    if (!accessToken) {
+      Swal.fire("Gagal!", "Access token tidak tersedia.", "error");
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `/portal/api/prod-katalog-data-2d/delete?data_2d_id=${row.data_2d_id}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(result.message || "Gagal menghapus layer");
+      }
+
+      Swal.fire("Terhapus", result.message || "Layer berhasil dihapus", "success");
+      setRefreshKey((k) => k + 1);
+    } catch (err) {
+      Swal.fire("Gagal!", err.message || "Terjadi kesalahan saat menghapus", "error");
+    }
   };
 
   return (
