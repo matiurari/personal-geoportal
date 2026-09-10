@@ -8,9 +8,9 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import UploadFileIcon from "@mui/icons-material/UploadFile";
 import ViewInArIcon from "@mui/icons-material/ViewInAr";
 import Swal from "sweetalert2";
+import TambahData from "./TambahData";
 
 
 const DUMMY_DATA_3D = [
@@ -252,66 +252,7 @@ export default function KatalogData3D() {
           Tambah Layer Data 3D
         </DialogTitle>
         <DialogContent>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5, mt: 1 }}>
-            <TextField
-              label="Nama Layer"
-              fullWidth
-              value={form.layer_name}
-              onChange={(e) => setForm((f) => ({ ...f, layer_name: e.target.value }))}
-              sx={{
-                "& .MuiInputBase-input": { color: "#1E1E2D" },
-                "& .MuiInputLabel-root": { color: "#6B7280" },
-                "& .MuiOutlinedInput-notchedOutline": { borderColor: "#D1D5DB" },
-              }}
-            />
-
-            <Button
-              component="label"
-              variant="outlined"
-              startIcon={<UploadFileIcon />}
-              sx={{
-                textTransform: "none",
-                justifyContent: "flex-start",
-                py: 1.2,
-                borderRadius: 2,
-                color: "#1E1E2D",
-                borderColor: "#D1D5DB",
-              }}
-            >
-              {form.file ? form.file.name : "Pilih File 3D Tiles (.zip)"}
-              <input
-                type="file"
-                accept=".zip"
-                hidden
-                onChange={(e) => setForm((f) => ({ ...f, file: e.target.files?.[0] || null }))}
-              />
-            </Button>
-
-            <TextField
-              select
-              label="Akses"
-              fullWidth
-              value={form.akses}
-              onChange={(e) => setForm((f) => ({ ...f, akses: e.target.value }))}
-              sx={{
-                "& .MuiInputBase-input": { color: "#1E1E2D" },
-                "& .MuiInputLabel-root": { color: "#6B7280" },
-                "& .MuiOutlinedInput-notchedOutline": { borderColor: "#D1D5DB" },
-              }}
-              slotProps={{
-                select: {
-                  slotProps: {
-                    paper: {
-                      sx: { bgcolor: "#fff", color: "#1E1E2D" },
-                    },
-                  },
-                },
-              }}
-            >
-              <MenuItem value="public">Public</MenuItem>
-              <MenuItem value="private">Private</MenuItem>
-            </TextField>
-          </Box>
+          <TambahData form={form} />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.5 }}>
           <Button onClick={() => setOpenCreate(false)} disabled={submitting} sx={{ textTransform: "none", color: "#6B7280" }}>
