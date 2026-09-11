@@ -8,6 +8,7 @@ import LayersIcon from "@mui/icons-material/Layers";
 import ViewInArIcon from "@mui/icons-material/ViewInAr";
 import MapIcon from "@mui/icons-material/Map";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
+import { ViewInAr } from "@mui/icons-material";
 
 const drawerWidth = 260;
 
@@ -15,6 +16,7 @@ const menuItems = [
   { label: "Katalog Data 2D", path: "/internal/katalog-data-2d", icon: <LayersIcon /> },
   { label: "Katalog Data 3D", path: "/internal/katalog-data-3d", icon: <ViewInArIcon /> },
   { label: "Kelola Akun", path: "/internal/kelola-akun", icon: <ManageAccountsIcon /> },
+  { label: "Gaussian Splatting", path: "/internal/splatting", icon: <ViewInAr /> }
 ];
 
 export default function Sidebar() {

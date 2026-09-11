@@ -169,7 +169,7 @@ const TambahData = ({ form, setForm, handleCloseCreate, getData, accessToken }) 
                         noWrap
                         sx={{ fontSize: 14, maxWidth: "220px", textOverflow: "ellipsis" }}
                     >
-                        {form?.file ? form.file.name : "Pilih File 3D (.glb / .zip)"}
+                        {form?.file ? form.file.name : "Pilih File 3D (.glb)"}
                     </Typography>
 
                     <input
