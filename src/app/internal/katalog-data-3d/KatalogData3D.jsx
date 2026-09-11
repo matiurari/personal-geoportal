@@ -20,6 +20,7 @@ import {
   IconButton,
   Tooltip,
   Link,
+  Modal,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
@@ -28,6 +29,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import TambahData from "./TambahData";
 import PreviewCesiumModal from "./PreviewCesiumModal";
+import { Close } from "@mui/icons-material";
+import { useSession } from "next-auth/react";
 
 export default function KatalogData3D({ data }) {
   const [search, setSearch] = useState("");
@@ -38,6 +41,10 @@ export default function KatalogData3D({ data }) {
   const [openCreate, setOpenCreate] = useState(false);
 
   const [form, setForm] = useState({ nama: "", file: null, akses: "public", });
+
+  const session = useSession();
+  console.log();
+
 
   useEffect(() => {
     if (!search.trim()) {
@@ -253,27 +260,40 @@ export default function KatalogData3D({ data }) {
       </Paper>
 
       {/* Modal Form Tambah Data */}
-      <Dialog
+      <Modal
         open={openCreate}
-        onClose={() => setOpenCreate(false)}
-        fullWidth
-        slotProps={{
-          paper: {
-            sx: {
-              bgcolor: "#fff",
-              color: "#1E1E2D",
-              borderRadius: 3,
-            },
-          },
-        }}
+        onClose={handleCloseCreate}
+        aria-labelledby="modal-tambah-data-3d"
       >
-        <DialogTitle sx={{ fontWeight: 700, color: "#1E1E2D" }}>
-          Tambah Layer Data 3D
-        </DialogTitle>
-        <DialogContent>
-          <TambahData form={form} setForm={setForm} handleCloseCreate={handleCloseCreate} />
-        </DialogContent>
-      </Dialog>
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: { xs: "90%", sm: 600, md: 700 }, // responsif untuk ukuran modal
+            bgcolor: "#fff",
+            color: "#1E1E2D",
+            borderRadius: 3,
+            boxShadow: 24,
+            p: 3, // padding dalam modal
+            outline: "none", // menghilangkan border highlight default MUI modal
+          }}
+        >
+          {/* Header Modal */}
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+            <Typography id="modal-tambah-data-3d" variant="h6" sx={{ fontWeight: 700, color: "#1E1E2D" }}>
+              Tambah Layer Data 3D
+            </Typography>
+            <IconButton onClick={handleCloseCreate} size="small" sx={{ color: "#6B7280" }}>
+              <Close />
+            </IconButton>
+          </Box>
+
+          {/* Konten Form */}
+          <TambahData form={form} setForm={setForm} handleCloseCreate={handleCloseCreate} accessToken={session.data.accessToken} />
+        </Box>
+      </Modal>
 
       {/* Modal Preview Cesium */}
       <PreviewCesiumModal
