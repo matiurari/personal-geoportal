@@ -3,7 +3,7 @@ import { db } from "../../../../../lib/db";
 import { requireAuth } from "../../../../../lib/auth/verifyBearerToken";
 
 export async function GET(request) {
-    const { payload, error, status } = await requireAuth(request, "editor");
+    const { payload, error, status } = requireAuth(request, "editor");
     if (error) {
         return NextResponse.json({ message: error }, { status });
     }

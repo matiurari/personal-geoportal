@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "../../../../../lib/db";
-import { requireAuth } from "../../../../../lib/auth/verifyBearerToken"; // Sesuaikan path requireAuth Anda
+import { requireAuth } from "../../../../../lib/auth/verifyBearerToken";
 import { writeFile } from "fs/promises";
 import path from "path";
 import fs from "fs";
@@ -24,49 +24,48 @@ export async function POST(request) {
         const roll = formData.get("roll") || 0;
 
         if (!file) {
-            return NextResponse.json({ message: "File .glb tidak boleh kosong" }, { status: 400 });
+            return NextResponse.json({ message: "File 3D tidak boleh kosong" }, { status: 400 });
         }
 
-        // 2. Proses Upload File ke folder root /data (atau /data/models)
+        // 2. Generate UUID terlebih dahulu
+        const data_3d_id = crypto.randomUUID();
+
+        // Dapatkan ekstensi asli dari file (misal: .glb atau .zip)
+        const fileExtension = path.extname(file.name) || ".glb";
+
+        // Buat nama file berdasarkan UUID semata
+        const filename = `${data_3d_id}${fileExtension}`;
+
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
-        // Tentukan direktori tujuan: root_project/data
         const uploadDir = path.join(process.cwd(), "data");
 
-        // Buat folder 'data' jika belum ada
         if (!fs.existsSync(uploadDir)) {
             fs.mkdirSync(uploadDir, { recursive: true });
         }
 
-        // Buat nama file yang unik untuk menghindari duplikasi/nama bentrok
-        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-        const originalName = file.name.replace(/\s+/g, "_"); // Hilangkan spasi
-        const filename = `${uniqueSuffix}-${originalName}`;
         const filePath = path.join(uploadDir, filename);
 
         // Tulis file ke storage lokal
         await writeFile(filePath, buffer);
 
-        // URL atau path relatif file yang akan disimpan ke database
-        // (Sesuaikan dengan bagaimana cara Anda nanti melayani/mengakses file ini)
-        const fileUrl = `/data/${filename}`;
-        const data_3d_id = crypto.randomUUID();
+        const fileUrl = `${process.env.BASE_URL}/api/katalog-data-3d/models/${data_3d_id}`;
 
-        // 3. Simpan ke Database Prisma
+        // 3. Simpan ke Database Prisma dengan UUID yang sama
         await db.katalog_data_3d.create({
             data: {
                 data_3d_id: data_3d_id,
                 nama: nama,
                 akses: akses,
-                url: fileUrl, // Menyimpan path file
-                latitude: parseFloat(latitude),   // Pastikan tipe data float/decimal
-                longitude: parseFloat(longitude), // Pastikan tipe data float/decimal
+                url: fileUrl,
+                latitude: parseFloat(latitude),
+                longitude: parseFloat(longitude),
                 heading: parseFloat(heading),
                 pitch: parseFloat(pitch),
                 roll: parseFloat(roll),
-                created_by: payload.user_id, // Sesuaikan relasi user jika ada di schema anda
-            }
+                author: payload.id,
+            },
         });
 
         return NextResponse.json({ message: "Data dan file 3D berhasil disimpan!" }, { status: 200 });
