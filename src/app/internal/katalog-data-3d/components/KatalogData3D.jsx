@@ -33,6 +33,11 @@ const PreviewCesiumModal = dynamic(
   { ssr: false }
 );
 
+const urlBasepath = process.env.NEXT_PUBLIC_URL_BASE_PATH;
+if (!urlBasepath) {
+  console.error("URL_BASE_PATH tidak terdefinisi! Cek env var NEXT_PUBLIC_URL_BASE_PATH.");
+}
+
 export default function KatalogData3D() {
   // Inisialisasi state awal dengan array kosong
   const [tableData, setTableData] = useState([]);
@@ -49,11 +54,13 @@ export default function KatalogData3D() {
   // Fungsi Fetch Data dari Client Side
   const getData = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}api/katalog-data-3d/list`, {
+      const res = await fetch(`${urlBasepath}/api/katalog-data-3d/list`, {
         headers: {
           Authorization: `Bearer ${session?.data?.accessToken}`,
         },
       });
+
+      console.log(res);
       if (res.ok) {
         const result = await res.json();
         setTableData(result.data || result);

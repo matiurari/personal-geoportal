@@ -88,8 +88,7 @@ const TambahData = ({ form, setForm, handleCloseCreate, getData, accessToken }) 
             formData.append("pitch", 0);
             formData.append("roll", 0);
 
-            // Gunakan path relatif atau NEXT_PUBLIC_BASE_URL
-            const endpoint = `${process.env.NEXT_PUBLIC_BASE_URL || ""}/api/katalog-data-3d/create`;
+            const endpoint = `${process.env.NEXT_PUBLIC_URL_BASE_PATH}/api/katalog-data-3d/create`;
 
             const response = await fetch(endpoint, {
                 method: "POST",
