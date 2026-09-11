@@ -26,7 +26,7 @@ const TambahData2D = ({ form, setForm, submitting, setSubmitting, onSuccess, onC
       formData.append("akses", form.akses);
       formData.append("editable", form.editable);
 
-      const res = await fetch("/portal/api/prod-katalog-data-2d/create", {
+     const res = await fetch(`${process.env.BASE_URL}/api/katalog-data-2d/create`, {
         method: "POST",
         headers: { Authorization: `Bearer ${accessToken}` },
         body: formData,

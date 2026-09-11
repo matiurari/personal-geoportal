@@ -21,7 +21,7 @@ const fetchData = useCallback(async (signal) => {
   try {
     setLoading(true);
     setError(null);
-    const res = await fetch("/portal/api/prod-katalog-data-2d/list", {
+    const res = await fetch(`${process.env.BASE_URL}/api/katalog-data-2d/list`, {
       signal,
       headers: {
         "Content-Type": "application/json",
