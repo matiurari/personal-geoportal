@@ -20,7 +20,7 @@ import MapIcon from "@mui/icons-material/Map";
 import HomeIcon from "@mui/icons-material/Home";
 
 const menuItems = [
-  { label: "Beranda", path: "/web-public", icon: <HomeIcon fontSize="small" /> },
+  { label: "Beranda", path: "/", icon: <HomeIcon fontSize="small" /> },
   { label: "Peta", path: "/web-public/peta", icon: <MapIcon fontSize="small" /> },
 ];
 
@@ -54,7 +54,7 @@ export default function Navbar() {
         {/* Logo */}
         <Box
           sx={{ display: "flex", alignItems: "center", gap: 1.2, cursor: "pointer" }}
-          onClick={() => router.push("/web-public")}
+          onClick={() => router.push("/")}
         >
           <Box
             sx={{
