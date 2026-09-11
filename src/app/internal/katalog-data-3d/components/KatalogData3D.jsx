@@ -49,7 +49,7 @@ export default function KatalogData3D() {
   // Fungsi Fetch Data dari Client Side
   const getData = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/katalog-data-3d/list`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}api/katalog-data-3d/list`, {
         headers: {
           Authorization: `Bearer ${session?.data?.accessToken}`,
         },
