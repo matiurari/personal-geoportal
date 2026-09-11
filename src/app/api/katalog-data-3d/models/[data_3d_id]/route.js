@@ -27,7 +27,7 @@ export async function GET(request, { params }) {
         }
 
         // 2. Cari file di folder /data yang diawali dengan data_3d_id
-        const uploadDir = path.join(process.cwd(), "data");
+        const uploadDir = path.join(process.cwd(), "data/models");
 
         if (!fs.existsSync(uploadDir)) {
             return NextResponse.json(
