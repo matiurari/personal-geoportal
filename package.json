@@ -30,7 +30,6 @@
     "pg": "^8.23.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "splat.js": "file:../../splat.js",
     "sweetalert2": "^11.26.25"
   },
   "devDependencies": {
