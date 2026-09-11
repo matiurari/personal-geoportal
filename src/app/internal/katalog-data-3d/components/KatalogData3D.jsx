@@ -27,26 +27,23 @@ import TambahData from "./TambahData";
 import { Close, Visibility } from "@mui/icons-material";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
+import HapusData from "./HapusData";
 
 const PreviewCesiumModal = dynamic(
   () => import("./PreviewCesiumModal"),
   { ssr: false }
 );
 
-const urlBasepath = process.env.NEXT_PUBLIC_URL_BASE_PATH;
-if (!urlBasepath) {
-  console.error("URL_BASE_PATH tidak terdefinisi! Cek env var NEXT_PUBLIC_URL_BASE_PATH.");
-}
-
 export default function KatalogData3D() {
   // Inisialisasi state awal dengan array kosong
   const [tableData, setTableData] = useState([]);
   const [search, setSearch] = useState("");
   const [filteredData, setFilteredData] = useState([]);
-  const [previewItem, setPreviewItem] = useState(null);
+  const [focusItem, setFocusItem] = useState(null);
 
   const [openPreview, setOpenPreview] = useState(false);
   const [openCreate, setOpenCreate] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
   const [form, setForm] = useState({ nama: "", file: null, akses: "public" });
 
   const session = useSession();
@@ -54,7 +51,7 @@ export default function KatalogData3D() {
   // Fungsi Fetch Data dari Client Side
   const getData = async () => {
     try {
-      const res = await fetch(`${urlBasepath}/api/katalog-data-3d/list`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_URL_BASE_PATH}/api/katalog-data-3d/list`, {
         headers: {
           Authorization: `Bearer ${session?.data?.accessToken}`,
         },
@@ -102,13 +99,23 @@ export default function KatalogData3D() {
 
   const handleOpenPreview = (item) => {
     setOpenPreview(true);
-    setPreviewItem(item);
+    setFocusItem(item);
   };
 
   const handleClosePreview = () => {
     setOpenPreview(false);
-    setPreviewItem(null);
+    setFocusItem(null);
   };
+
+  const handleOpenDelete = (item) => {
+    setOpenDelete(true)
+    setFocusItem(item)
+  }
+
+  const handleCloseDelete = () => {
+    setOpenDelete(false)
+    setFocusItem(null);
+  }
 
   return (
     <Box sx={{ p: 1 }}>
@@ -256,11 +263,7 @@ export default function KatalogData3D() {
 
                   <TableCell align="center">
                     <Tooltip title="Preview di Cesium">
-                      <IconButton
-                        size="small"
-                        color="primary"
-                        onClick={() => handleOpenPreview(row)}
-                      >
+                      <IconButton size="small" color="primary" onClick={() => handleOpenPreview(row)}>
                         <Visibility fontSize="small" />
                       </IconButton>
                     </Tooltip>
@@ -270,7 +273,7 @@ export default function KatalogData3D() {
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Hapus Layer">
-                      <IconButton size="small" color="error">
+                      <IconButton size="small" color="error" onClick={() => handleOpenDelete(row)}>
                         <DeleteIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
@@ -356,7 +359,42 @@ export default function KatalogData3D() {
           <PreviewCesiumModal
             openPreview={openPreview}
             onClose={handleClosePreview}
-            item={previewItem}
+            item={focusItem}
+          />
+        </Box>
+      </Modal>
+
+      {/* Modal Hapus Data */}
+      <Modal
+        open={openDelete}
+        onClose={handleCloseDelete}
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: { xs: "90%", sm: 450, md: 500 },
+            bgcolor: "#fff",
+            color: "#1E1E2D",
+            borderRadius: 3,
+            boxShadow: 24,
+            p: 3,
+            outline: "none",
+          }}
+        >
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 1 }}>
+            <IconButton onClick={handleCloseDelete} size="small" sx={{ color: "#6B7280" }}>
+              <Close />
+            </IconButton>
+          </Box>
+
+          <HapusData
+            item={focusItem}
+            accessToken={session?.data?.accessToken}
+            getData={getData}
+            handleCloseDelete={handleCloseDelete}
           />
         </Box>
       </Modal>

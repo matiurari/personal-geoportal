@@ -16,7 +16,6 @@ COPY . .
 
 # Build NextJS untuk production
 ENV NEXT_TELEMETRY_DISABLED 1
-RUN echo "DEBUG BUILD-TIME ENV: $NEXT_PUBLIC_URL_BASE_PATH"
 RUN npm run build
 
 # ---- Stage 3: Production image (ringan, tanpa source code & dev dependency) ----

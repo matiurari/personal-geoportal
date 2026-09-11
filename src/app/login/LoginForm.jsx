@@ -2,19 +2,24 @@
 
 import { Alert, Button, CircularProgress, IconButton, InputAdornment, Paper, TextField, Typography } from '@mui/material'
 import { useRouter } from 'next/navigation';
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { palette } from "../../theme/theme"
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { signIn } from 'next-auth/react';
 
-const LoginForm = () => {
+const LoginForm = ({ session }) => {
     const router = useRouter();
-
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (session) {
+            router.push("/internal")
+        }
+    }, [session]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();

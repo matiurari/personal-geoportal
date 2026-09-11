@@ -1,8 +1,11 @@
 import { Box } from "@mui/material";
 import { palette } from "../../theme/theme"
 import LoginForm from "./LoginForm";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../api/auth/[...nextauth]/route";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+    const session = await getServerSession(authOptions);
     return (
         <Box
             sx={{
@@ -15,7 +18,7 @@ export default function LoginPage() {
                 px: 2,
             }}
         >
-            <LoginForm />
+            <LoginForm session={session}/>
         </Box>
     );
 }

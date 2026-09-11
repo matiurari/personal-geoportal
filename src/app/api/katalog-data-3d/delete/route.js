@@ -24,8 +24,8 @@ export async function POST(request) {
             where: { data_3d_id: data_3d_id }
         });
 
-        // 3. Hapus file fisik di storage server (folder cwd/data)
-        const uploadDir = path.join(process.cwd(), "data");
+        // 3. Hapus file fisik di storage server (folder cwd/data/models)
+        const uploadDir = path.join(process.cwd(), "data/models");
 
         if (fs.existsSync(uploadDir)) {
             const files = fs.readdirSync(uploadDir);
@@ -37,6 +37,8 @@ export async function POST(request) {
                 if (fs.existsSync(filePath)) {
                     fs.unlinkSync(filePath); // Hapus file biner
                 }
+            } else {
+                console.warn(`File fisik untuk data_3d_id ${data_3d_id} tidak ditemukan di ${uploadDir}`);
             }
         }
 
