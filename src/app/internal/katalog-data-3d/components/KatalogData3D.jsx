@@ -28,6 +28,7 @@ import { Close, Visibility } from "@mui/icons-material";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import HapusData from "./HapusData";
+import UpdateData from "./UpdateData";
 
 const PreviewCesiumModal = dynamic(
   () => import("./PreviewCesiumModal"),
@@ -44,6 +45,7 @@ export default function KatalogData3D() {
   const [openPreview, setOpenPreview] = useState(false);
   const [openAdd, setOpenAdd] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
   const [form, setForm] = useState({ nama: "", file: null, akses: "public" });
 
   const session = useSession();
@@ -113,6 +115,16 @@ export default function KatalogData3D() {
 
   const handleCloseDelete = () => {
     setOpenDelete(false)
+    setFocusItem(null);
+  }
+
+  const handleOpenEdit = (item) => {
+    setOpenEdit(true);
+    setFocusItem(item);
+  };
+
+  const handleCloseEdit = () => {
+    setOpenEdit(false);
     setFocusItem(null);
   }
 
@@ -271,7 +283,7 @@ export default function KatalogData3D() {
                     {session?.data?.user?.role !== "viewer" ? (
                       <>
                         <Tooltip title="Edit Metadata">
-                          <IconButton size="small" color="info">
+                          <IconButton size="small" color="info" onClick={() => handleOpenEdit(row)}>
                             <EditIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
@@ -302,103 +314,44 @@ export default function KatalogData3D() {
 
       {/* Modal Form Tambah Data */}
       <Modal open={openAdd} onClose={handleCloseAdd}>
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: { xs: "90%", sm: 600, md: 700 },
-            bgcolor: "#fff",
-            color: "#1E1E2D",
-            borderRadius: 3,
-            boxShadow: 24,
-            p: 3,
-            outline: "none",
-          }}
-        >
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-            <Typography id="modal-tambah-data-3d" variant="h6" sx={{ fontWeight: 700, color: "#1E1E2D" }}>
-              Tambah Layer Data 3D
-            </Typography>
-            <IconButton onClick={handleCloseAdd} size="small" sx={{ color: "#6B7280" }}>
-              <Close />
-            </IconButton>
-          </Box>
-
-          <TambahData
-            form={form}
-            setForm={setForm}
-            handleCloseAdd={handleCloseAdd}
-            getData={getData}
-            accessToken={session?.data?.accessToken}
-          />
-        </Box>
+        <TambahData
+          form={form}
+          setForm={setForm}
+          handleCloseAdd={handleCloseAdd}
+          getData={getData}
+          accessToken={session?.data?.accessToken}
+        />
       </Modal>
 
       {/* Modal Preview Cesium */}
       <Modal open={openPreview} onClose={handleClosePreview}>
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: { xs: "90%", sm: 600, md: 700 },
-            bgcolor: "#fff",
-            color: "#1E1E2D",
-            borderRadius: 3,
-            boxShadow: 24,
-            p: 3,
-            outline: "none",
-          }}
-        >
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-            <Typography id="modal-tambah-data-3d" variant="h6" sx={{ fontWeight: 700, color: "#1E1E2D" }}>
-              Tambah Layer Data 3D
-            </Typography>
-            <IconButton onClick={handleClosePreview} size="small" sx={{ color: "#6B7280" }}>
-              <Close />
-            </IconButton>
-          </Box>
-          <PreviewCesiumModal
-            openPreview={openPreview}
-            onClose={handleClosePreview}
-            item={focusItem}
-          />
-        </Box>
+        <PreviewCesiumModal
+          openPreview={openPreview}
+          onClose={handleClosePreview}
+          item={focusItem}
+          handleClosePreview={handleClosePreview}
+          accessToken={session?.data?.accessToken}
+        />
       </Modal>
 
       {/* Modal Hapus Data */}
       <Modal open={openDelete} onClose={handleCloseDelete} >
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: { xs: "90%", sm: 450, md: 500 },
-            bgcolor: "#fff",
-            color: "#1E1E2D",
-            borderRadius: 3,
-            boxShadow: 24,
-            p: 3,
-            outline: "none",
-          }}
-        >
-          <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 1 }}>
-            <IconButton onClick={handleCloseDelete} size="small" sx={{ color: "#6B7280" }}>
-              <Close />
-            </IconButton>
-          </Box>
+        <HapusData
+          item={focusItem}
+          accessToken={session?.data?.accessToken}
+          getData={getData}
+          handleCloseDelete={handleCloseDelete}
+        />
+      </Modal>
 
-          <HapusData
-            item={focusItem}
-            accessToken={session?.data?.accessToken}
-            getData={getData}
-            handleCloseDelete={handleCloseDelete}
-          />
-        </Box>
+      {/* Modal Edit Data */}
+      <Modal open={openEdit} onClose={handleCloseEdit}>
+        <UpdateData
+          item={focusItem}
+          handleCloseEdit={handleCloseEdit}
+          getData={getData}
+          accessToken={session?.data?.accessToken}
+        />
       </Modal>
     </Box>
   );

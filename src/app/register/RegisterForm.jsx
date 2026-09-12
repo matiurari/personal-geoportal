@@ -1,17 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import {
-    Alert,
-    Button,
-    CircularProgress,
-    IconButton,
-    InputAdornment,
-    Link,
-    Paper,
-    TextField,
-    Typography
-} from '@mui/material';
+import { Alert, Button, CircularProgress, IconButton, InputAdornment, Link, Paper, TextField, Typography } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
 import { palette } from "../../theme/theme";
@@ -56,7 +46,6 @@ const RegisterForm = () => {
         setLoading(true);
 
         try {
-            // Contoh pemanggilan API backend untuk registrasi
             const res = await fetch("/portal/api/users/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -68,7 +57,6 @@ const RegisterForm = () => {
                 throw new Error(data.message || "Gagal mendaftar. Silakan coba lagi.");
             }
 
-            // Setelah berhasil register, arahkan ke halaman login
             router.push("/login");
         } catch (err) {
             setError(err.message || "Terjadi kesalahan pada server.");

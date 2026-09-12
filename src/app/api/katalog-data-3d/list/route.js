@@ -20,6 +20,7 @@ export async function GET(request) {
                 heading: true,
                 pitch: true,
                 roll: true,
+                scale: true,
                 users: {
                     select: {
                         email: true

@@ -19,9 +19,10 @@ export async function POST(request) {
         const akses = formData.get("akses");
         const latitude = formData.get("latitude");
         const longitude = formData.get("longitude");
-        const heading = formData.get("heading") || 0;
-        const pitch = formData.get("pitch") || 0;
-        const roll = formData.get("roll") || 0;
+        const heading = formData.get("heading");
+        const pitch = formData.get("pitch");
+        const roll = formData.get("roll");
+        const scale = formData.get("scale");
 
         if (!file) {
             return NextResponse.json({ message: "File 3D tidak boleh kosong" }, { status: 400 });
@@ -64,6 +65,7 @@ export async function POST(request) {
                 heading: parseFloat(heading),
                 pitch: parseFloat(pitch),
                 roll: parseFloat(roll),
+                scale: parseFloat(scale),
                 author: payload.id,
             },
         });

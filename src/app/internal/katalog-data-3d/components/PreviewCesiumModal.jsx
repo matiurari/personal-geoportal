@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Box, Typography } from "@mui/material";
-import { useSession } from "next-auth/react";
+import { Box, IconButton, Typography } from "@mui/material";
+import { Close } from "@mui/icons-material";
 
 const CESIUM_VERSION = "1.120";
 const CESIUM_BASE_URL = `https://cesium.com/downloads/cesiumjs/releases/${CESIUM_VERSION}/Build/Cesium/`;
@@ -36,12 +36,11 @@ function loadCesiumCDN(onSuccess, onError) {
     }
 }
 
-export default function PreviewCesiumModal({ openPreview, item }) {
+export default function PreviewCesiumModal({ openPreview, item, handleClosePreview, accessToken }) {
     const containerRef = useRef(null);
     const viewerRef = useRef(null);
     const [status, setStatus] = useState("idle");
     const [errorMessage, setErrorMessage] = useState("");
-    const session = useSession();
 
     useEffect(() => {
         if (!openPreview) return;
@@ -67,6 +66,11 @@ export default function PreviewCesiumModal({ openPreview, item }) {
 
         const lat = Number(item.latitude);
         const lon = Number(item.longitude);
+
+        // Fallback ke 0 kalau heading/pitch/roll tidak ada / bukan angka valid
+        const headingDeg = Number.isFinite(Number(item.heading)) ? Number(item.heading) : 0;
+        const pitchDeg = Number.isFinite(Number(item.pitch)) ? Number(item.pitch) : 0;
+        const rollDeg = Number.isFinite(Number(item.roll)) ? Number(item.roll) : 0;
 
         if (!item.url || !Number.isFinite(lat) || !Number.isFinite(lon)) {
             setErrorMessage("URL file GLB atau koordinat tidak valid.");
@@ -101,13 +105,27 @@ export default function PreviewCesiumModal({ openPreview, item }) {
                 })
             );
 
-            // 4. Tambahkan Model 3D
+            // 4. Hitung posisi dan orientasi (heading/pitch/roll) model
             const position = Cesium.Cartesian3.fromDegrees(lon, lat, 0);
+
+            const heading = Cesium.Math.toRadians(headingDeg);
+            const pitch = Cesium.Math.toRadians(pitchDeg);
+            const roll = Cesium.Math.toRadians(rollDeg);
+            const hpr = new Cesium.HeadingPitchRoll(heading, pitch, roll);
+
+            // orientation harus berupa CallbackProperty/Quaternion agar konsisten
+            // dengan posisi yang bisa clamp ke tanah (ellipsoid sistem lokal)
+            const orientation = new Cesium.CallbackProperty(() => {
+                return Cesium.Transforms.headingPitchRollQuaternion(position, hpr);
+            }, false);
+
+            // 5. Tambahkan Model 3D dengan orientasi
             const modelEntity = viewer.entities.add({
                 position,
+                orientation,
                 model: {
-                    uri: `${item.url}?access_token=${session?.data?.accessToken}`,
-                    scale: 100.0,
+                    uri: `${item.url}?access_token=${accessToken}`,
+                    scale: item.scale,
                     heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
                 },
             });
@@ -135,33 +153,58 @@ export default function PreviewCesiumModal({ openPreview, item }) {
     return (
         <Box
             sx={{
-                width: "100%",
-                height: "500px",
-                bgcolor: "#1E1E2D",
-                borderRadius: 2,
-                overflow: "hidden",
-                position: "relative",
                 display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-            }}
-        >
-            {status === "memuat" && <Typography sx={{ color: "#fff" }}>Memuat Peta 3D...</Typography>}
-
-            {status === "error" && (
-                <Typography sx={{ color: "#ef4444", p: 2, textAlign: "center" }}>
-                    {errorMessage || "Terjadi kesalahan saat memuat 3D."}
+                flexDirection: "column",
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                width: { xs: "90%", sm: 600, md: 700 },
+                bgcolor: "#fff",
+                color: "#1E1E2D",
+                borderRadius: 3,
+                boxShadow: 24,
+                p: 3,
+                outline: "none",
+            }}>
+            <Box sx={{ display: "flex", flexDirection: "row", justifyContent: "space-between", marginBottom: 3 }}>
+                <Typography id="modal-tambah-data-3d" variant="h6" sx={{ fontWeight: 700, color: "#1E1E2D" }}>
+                    {item?.nama}
                 </Typography>
-            )}
-
+                <IconButton onClick={handleClosePreview} size="small" sx={{ color: "#6B7280" }}>
+                    <Close />
+                </IconButton>
+            </Box>
             <Box
-                ref={containerRef}
                 sx={{
                     width: "100%",
-                    height: "100%",
-                    visibility: status === "siap" ? "visible" : "hidden",
+                    height: "500px",
+                    bgcolor: "#1E1E2D",
+                    borderRadius: 2,
+                    overflow: "hidden",
+                    position: "relative",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
                 }}
-            />
+            >
+                {status === "memuat" && <Typography sx={{ color: "#fff" }}>Memuat Peta 3D...</Typography>}
+
+                {status === "error" && (
+                    <Typography sx={{ color: "#ef4444", p: 2, textAlign: "center" }}>
+                        {errorMessage || "Terjadi kesalahan saat memuat 3D."}
+                    </Typography>
+                )}
+
+                <Box
+                    ref={containerRef}
+                    sx={{
+                        width: "100%",
+                        height: "100%",
+                        visibility: status === "siap" ? "visible" : "hidden",
+                    }}
+                />
+            </Box>
         </Box>
     );
 }

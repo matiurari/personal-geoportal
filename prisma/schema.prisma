@@ -40,5 +40,6 @@ model katalog_data_3d {
   heading    Int?
   pitch      Int?
   roll       Int?
+  scale      Int?
   users      users?  @relation(fields: [author], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "katalog_data_3d_users_fk")
 }
