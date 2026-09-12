@@ -57,7 +57,7 @@ const RegisterForm = () => {
 
         try {
             // Contoh pemanggilan API backend untuk registrasi
-            const res = await fetch(`${process.env.BASE_URL}/api/users/register`, {
+            const res = await fetch("/portal/api/users/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ nama, email, password }),
