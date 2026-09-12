@@ -21,15 +21,13 @@ const HapusData = ({ item, handleCloseDelete, getData, accessToken }) => {
             const formData = new FormData();
             formData.append("data_3d_id", item.data_3d_id);
 
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_URL_BASE_PATH}/api/katalog-data-3d/delete`,
-                {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`,
-                    },
-                    body: formData,
-                }
+            const response = await fetch("/portal/api/katalog-data-3d/delete", {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+                body: formData,
+            }
             );
 
             const result = await response.json();
