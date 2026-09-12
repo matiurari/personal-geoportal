@@ -28,8 +28,6 @@ import { Close, Visibility } from "@mui/icons-material";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import HapusData from "./HapusData";
-import BuatData from "./BuatData";
-import BuatData3DModal from "./BuatData";
 
 const PreviewCesiumModal = dynamic(
   () => import("./PreviewCesiumModal"),
@@ -46,7 +44,6 @@ export default function KatalogData3D() {
   const [openPreview, setOpenPreview] = useState(false);
   const [openAdd, setOpenAdd] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
-  const [openCreate, setOpenCreate] = useState(false);
   const [form, setForm] = useState({ nama: "", file: null, akses: "public" });
 
   const session = useSession();
@@ -54,13 +51,12 @@ export default function KatalogData3D() {
   // Fungsi Fetch Data dari Client Side
   const getData = async () => {
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_URL_BASE_PATH}/api/katalog-data-3d/list`, {
+      const res = await fetch(`${process.env.BASE_URL}/api/katalog-data-3d/list`, {
         headers: {
           Authorization: `Bearer ${session?.data?.accessToken}`,
         },
       });
 
-      console.log(res);
       if (res.ok) {
         const result = await res.json();
         setTableData(result.data || result);
@@ -120,14 +116,6 @@ export default function KatalogData3D() {
     setFocusItem(null);
   }
 
-  const handleOpenCreate = () => {
-    setOpenCreate(true);
-  };
-
-  const handleCloseCreate = () => {
-    setOpenCreate(false);
-  };
-
   return (
     <Box sx={{ p: 1 }}>
       {/* Header Section */}
@@ -173,37 +161,24 @@ export default function KatalogData3D() {
             },
           }}
         />
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleOpenCreate}
-          sx={{
-            height: "100%",
-            bgcolor: "#908dbd",
-            "&:hover": { bgcolor: "#3b3952" },
-            borderRadius: 2,
-            textTransform: "none",
-            fontWeight: 600,
-            px: 2.5,
-          }}>
-          Buat Data 3D
-        </Button>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleOpenAdd}
-          sx={{
-            height: "100%",
-            bgcolor: "#4F46E5",
-            "&:hover": { bgcolor: "#4338CA" },
-            borderRadius: 2,
-            textTransform: "none",
-            fontWeight: 600,
-            px: 2.5,
-          }}
-        >
-          Tambah Layer 3D
-        </Button>
+        {session?.data?.user?.role !== "viewer" ? (
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleOpenAdd}
+            sx={{
+              height: "100%",
+              bgcolor: "#4F46E5",
+              "&:hover": { bgcolor: "#4338CA" },
+              borderRadius: 2,
+              textTransform: "none",
+              fontWeight: 600,
+              px: 2.5,
+            }}
+          >
+            Tambah Layer 3D
+          </Button>
+        ) : null}
       </Box>
 
       {/* Data Table */}
@@ -293,16 +268,20 @@ export default function KatalogData3D() {
                         <Visibility fontSize="small" />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title="Edit Metadata">
-                      <IconButton size="small" color="info">
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Hapus Layer">
-                      <IconButton size="small" color="error" onClick={() => handleOpenDelete(row)}>
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
+                    {session?.data?.user?.role !== "viewer" ? (
+                      <>
+                        <Tooltip title="Edit Metadata">
+                          <IconButton size="small" color="info">
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Hapus Layer">
+                          <IconButton size="small" color="error" onClick={() => handleOpenDelete(row)}>
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </>
+                    ) : null}
                   </TableCell>
                 </TableRow>
               ))
@@ -421,31 +400,6 @@ export default function KatalogData3D() {
           />
         </Box>
       </Modal>
-
-      {/* Modal Buat Data */}
-      <BuatData3DModal
-        isOpen={openCreate}
-        onClose={handleCloseCreate}
-        onComplete={(plyBlob, meta) => {
-          // 1. Convert Blob menjadi File object agar dapat diproses form upload
-          const plyFile = new File(
-            [plyBlob],
-            `splat-${Date.now()}.ply`,
-            { type: 'application/octet-stream' }
-          );
-
-          // 2. Set file dan opsi metadata bawaan ke state form Tambah Data
-          setForm({
-            nama: `Model Splat 3D (${meta?.splatCount ? meta.splatCount.toLocaleString() + ' splats' : 'Baru'})`,
-            file: plyFile,
-            akses: "public",
-          });
-
-          // 3. Pindah alur modal
-          setOpenCreate(false);
-          setOpenAdd(true);
-        }}
-      />
     </Box>
   );
 }

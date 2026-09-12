@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import { db } from "../../../../../../lib/db";
+import { requireAuth } from "../../../../../../lib/auth/verifyBearerToken";
 
 export async function GET(request, { params }) {
     try {
@@ -19,11 +20,20 @@ export async function GET(request, { params }) {
             where: { data_3d_id: data_3d_id },
         });
 
+        // PERBAIKAN 1: Cek keberadaan item TERLEBIH DAHULU
         if (!item) {
             return NextResponse.json(
                 { message: "Data 3D tidak ditemukan di database" },
                 { status: 404 }
             );
+        }
+
+        // PERBAIKAN 2: Normalisasi huruf kecil (.toLowerCase()) untuk mengantisipasi "Private" / "PRIVATE"
+        if (item.akses?.toLowerCase() === "private") {
+            const { payload, error, status } = requireAuth(request, "viewer");
+            if (error) {
+                return NextResponse.json({ message: error }, { status });
+            }
         }
 
         // 2. Cari file di folder /data yang diawali dengan data_3d_id
@@ -78,7 +88,9 @@ export async function GET(request, { params }) {
                 "Content-Type": contentType,
                 "Content-Length": fileStats.size.toString(),
                 "Content-Disposition": `inline; filename="${targetFileName}"`,
-                "Cache-Control": "public, max-age=31536000, immutable",
+                "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0",
             },
         });
     } catch (error) {

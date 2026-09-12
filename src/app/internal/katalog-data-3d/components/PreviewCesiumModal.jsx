@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Box, Typography } from "@mui/material";
+import { useSession } from "next-auth/react";
 
 const CESIUM_VERSION = "1.120";
 const CESIUM_BASE_URL = `https://cesium.com/downloads/cesiumjs/releases/${CESIUM_VERSION}/Build/Cesium/`;
@@ -40,6 +41,7 @@ export default function PreviewCesiumModal({ openPreview, item }) {
     const viewerRef = useRef(null);
     const [status, setStatus] = useState("idle");
     const [errorMessage, setErrorMessage] = useState("");
+    const session = useSession();
 
     useEffect(() => {
         if (!openPreview) return;
@@ -104,7 +106,7 @@ export default function PreviewCesiumModal({ openPreview, item }) {
             const modelEntity = viewer.entities.add({
                 position,
                 model: {
-                    uri: item.url,
+                    uri: `${item.url}?access_token=${session?.data?.accessToken}`,
                     scale: 100.0,
                     heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
                 },
