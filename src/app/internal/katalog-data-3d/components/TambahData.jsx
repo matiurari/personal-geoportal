@@ -7,6 +7,31 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Close } from "@mui/icons-material";
 
+// Style dasar dipakai untuk semua TextField agar konsisten dengan TambahData
+const textFieldStyle = {
+    "& .MuiInputBase-input": { color: "#1F2937" },
+    "& .MuiInputLabel-root": { color: "#6B7280" },
+    "& .MuiInputLabel-root.Mui-focused": { color: "#1976D2" },
+    "& .MuiOutlinedInput-root": {
+        "& fieldset": { borderColor: "#BFC5CC" },
+        "&:hover fieldset": { borderColor: "#1976D2" },
+        "&.Mui-focused fieldset": { borderColor: "#1976D2" },
+    },
+};
+
+// Style khusus untuk field disabled (Nama Layer, URL File) agar tetap terbaca jelas
+const disabledFieldStyle = {
+    ...textFieldStyle,
+    "& .MuiInputBase-input.Mui-disabled": {
+        color: "#1F2937",
+        WebkitTextFillColor: "#1F2937", // penting: override default fade Safari/Chrome
+    },
+    "& .MuiInputLabel-root.Mui-disabled": { color: "#6B7280" },
+    "& .MuiOutlinedInput-root.Mui-disabled .MuiOutlinedInput-notchedOutline": {
+        borderColor: "#D1D5DB",
+    },
+};
+
 const TambahData = ({ form, setForm, handleCloseAdd, getData, accessToken }) => {
     const mapRef = useRef(null);
     const mapInstanceRef = useRef(null);
@@ -233,6 +258,55 @@ const TambahData = ({ form, setForm, handleCloseAdd, getData, accessToken }) => 
                         <MenuItem value="public">Public</MenuItem>
                         <MenuItem value="private">Private</MenuItem>
                     </TextField>
+
+                    {/* Orientasi: Heading, Pitch, Roll */}
+                    <Box sx={{ display: "flex", gap: 1.5 }}>
+                        <TextField
+                            label="Heading"
+                            type="number"
+                            fullWidth
+                            value={form?.heading ?? 0}
+                            onChange={(e) =>
+                                setForm &&
+                                setForm((f) => ({
+                                    ...f,
+                                    heading: e.target.value,
+                                }))
+                            }
+                            inputprops={{ step: "1" }}
+                            sx={textFieldStyle}
+                        />
+                        <TextField
+                            label="Pitch"
+                            type="number"
+                            fullWidth
+                            value={form?.pitch ?? 0}
+                            onChange={(e) =>
+                                setForm &&
+                                setForm((f) => ({
+                                    ...f,
+                                    pitch: e.target.value,
+                                }))
+                            }
+                            inputprops={{ step: "1" }}
+                            sx={textFieldStyle}
+                        />
+                        <TextField
+                            label="Roll"
+                            type="number"
+                            fullWidth
+                            value={form?.roll ?? 0}
+                            onChange={(e) =>
+                                setForm &&
+                                setForm((f) => ({
+                                    ...f,
+                                    roll: e.target.value,
+                                }))
+                            }
+                            inputprops={{ step: "1" }}
+                            sx={textFieldStyle}
+                        />
+                    </Box>
 
                     {/* Scale */}
                     <TextField

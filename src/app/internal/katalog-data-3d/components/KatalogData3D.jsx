@@ -35,6 +35,19 @@ const PreviewCesiumModal = dynamic(
   { ssr: false }
 );
 
+// Nilai default form Tambah Data — dipakai saat modal dibuka & ditutup
+const DEFAULT_FORM = {
+  nama: "",
+  file: null,
+  akses: "public",
+  latitude: "",
+  longitude: "",
+  heading: 0,
+  pitch: 0,
+  roll: 0,
+  scale: 1,
+};
+
 export default function KatalogData3D() {
   // Inisialisasi state awal dengan array kosong
   const [tableData, setTableData] = useState([]);
@@ -46,7 +59,7 @@ export default function KatalogData3D() {
   const [openAdd, setOpenAdd] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
-  const [form, setForm] = useState({ nama: "", file: null, akses: "public" });
+  const [form, setForm] = useState(DEFAULT_FORM);
 
   const session = useSession();
 
@@ -89,12 +102,12 @@ export default function KatalogData3D() {
   }, [search, tableData]);
 
   const handleOpenAdd = () => {
-    setForm({ nama: "", file: null, akses: "public" });
+    setForm(DEFAULT_FORM);
     setOpenAdd(true);
   };
 
   const handleCloseAdd = () => {
-    setForm({ nama: "", file: null, akses: "public" });
+    setForm(DEFAULT_FORM);
     setOpenAdd(false);
   };
 
