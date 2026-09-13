@@ -14,7 +14,7 @@ import {
 import { Layers, Delete, Search as SearchIcon } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 
-const CATALOG_LAYER = "/api/katalog-data-2d/list-public";
+const CATALOG_LAYER = "/portal/api/katalog-data-2d/list-public";
 
 const EarthSwitch = styled((props) => (
   <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />
