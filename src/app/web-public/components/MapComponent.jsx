@@ -10,6 +10,7 @@ import Search from "../peta/widgets/Search";
 import FullScreen from "../peta/widgets/FullScreen";
 import Bahasa from "../peta/widgets/Bahasa";
 import Zoom from "../peta/widgets/Zoom";
+import Katalog from "../peta/widgets/Katalog";
 
 const HOME_COORDS = { lat: -6.1754, lng: 106.8272, zoom: 16 };
 
@@ -36,10 +37,12 @@ export default function MapComponent() {
   const tileLayerRef = useRef(null);
   const markerRef = useRef(null);
   const userMarkerRef = useRef(null);
+  const addedLayersRef = useRef({});
 
   const [activeBasemap, setActiveBasemap] = useState(DEFAULT_BASEMAP);
   const [bahasa, setBahasa] = useState("ID");
   const [ready, setReady] = useState(false);
+  
 
   useEffect(() => {
     let cancelled = false;
@@ -106,43 +109,27 @@ export default function MapComponent() {
           gap: 0.75,
         }}
       >
-        <Box sx={{ display: "flex", gap: 5,  padding: 1, }}>
+        <Box sx={{ display: "flex", gap: 5, padding: 1 }}>
           <Home map={map} markerRef={markerRef} />
           <Locate L={L} map={map} userMarkerRef={userMarkerRef} buttonSize={BUTTON_SIZE} tooltip="left" />
           <FullScreen buttonSize={BUTTON_SIZE} tooltip="bottom" />
-          <Bahasa
-            buttonSize={BUTTON_SIZE}
-            tooltip="bottom"
-            bahasa={bahasa}
-            setBahasa={setBahasa}
-          />
+          <Bahasa buttonSize={BUTTON_SIZE} tooltip="bottom" bahasa={bahasa} setBahasa={setBahasa} />
         </Box>
 
         <Box sx={{ width: "100%" }}>
           <Search L={L} map={map} markerRef={markerRef} />
         </Box>
       </Box>
+
       <Box
         sx={{
           position: "absolute",
-          bottom: 90,
-          right: 16,
+          top: { xs: 88, md: 100 }, 
+          left: { xs: 12, md: 32 },
           zIndex: 1000,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 3,
         }}
       >
-        <Basemap
-          L={L}
-          map={map}
-          tileLayerRef={tileLayerRef}
-          activeBasemap={activeBasemap}
-          onChangeBasemap={setActiveBasemap}
-        />
-        <Zoom map={map} buttonSize={BUTTON_SIZE} />
-        
+        <Katalog map={map} addedLayersRef={addedLayersRef} buttonSize={BUTTON_SIZE} />
       </Box>
     </Box>
   );
