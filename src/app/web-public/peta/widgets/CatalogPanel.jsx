@@ -287,36 +287,6 @@ export default function CatalogPanel({ open, map, addedLayersRef }) {
               )}
             </List>
           </Box>
-
-          {/* HAPUS SEMUA */}
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "90%",
-              height: "50px",
-              flexShrink: 0,
-            }}
-          >
-            <Button
-              sx={{
-                width: "90%",
-                height: "40px",
-                color: "#F4EFE2",
-                backgroundColor: "#8C3B2E",
-                borderRadius: 1.5,
-                fontWeight: "600",
-                fontSize: "16px",
-                textTransform: "capitalize",
-                "&:hover": { backgroundColor: "#732F25" },
-              }}
-              onClick={handleRemoveAll}
-              endIcon={<Delete />}
-            >
-              Hapus Semua
-            </Button>
-          </Box>
         </>
       )}
     </Box>
