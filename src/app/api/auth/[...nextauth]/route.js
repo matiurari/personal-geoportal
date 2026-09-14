@@ -34,7 +34,8 @@ export const authOptions = {
         async jwt({ token, user }) {
             // 1. Saat pertama kali login
             if (user) {
-                token.user_id = user.user_id;
+                // Di sini tempat object yang diberikan 
+                token.id = user.user_id;
                 token.email = user.email;
                 token.role = user.role;
                 token.accessToken = user.accessToken;
@@ -46,7 +47,7 @@ export const authOptions = {
             } catch (err) {
                 // Jika expired, buat ulang Bearer Token baru menggunakan data user dari token NextAuth
                 token.accessToken = signAccessToken({
-                    user_id: token.user_id,
+                    user_id: token.id,
                     email: token.email,
                     role: token.role,
                 });
@@ -55,6 +56,7 @@ export const authOptions = {
         },
         async session({ session, token }) {
             session.user.id = token.id;
+            session.user.user_id = token.user_id;
             session.user.email = token.email;
             session.user.role = token.role;
             session.accessToken = token.accessToken;
