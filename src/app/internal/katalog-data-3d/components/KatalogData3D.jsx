@@ -194,6 +194,7 @@ export default function KatalogData3D() {
               <TableCell>URL File</TableCell>
               <TableCell>Koordinat (Lat, Long)</TableCell>
               <TableCell>Pembuat</TableCell>
+              <TableCell>Tipe File</TableCell>
               <TableCell>Akses</TableCell>
               <TableCell align="center">Aksi</TableCell>
             </TableRow>
@@ -229,11 +230,20 @@ export default function KatalogData3D() {
                     {row.latitude?.toFixed(4)}, {row.longitude?.toFixed(4)}
                   </TableCell>
 
-                  <TableCell sx={{ color: "#374151" }}>{row.users?.email || "-"}</TableCell>
+                  <TableCell sx={{ color: "#374151" }}>{row.users?.email}</TableCell>
+                  <TableCell sx={{ color: "#374151" }}>
+                    <Chip
+                      label={(row.tipe_file).toUpperCase()}
+                      size="small"
+                      color={row.tipe_file === "glb" ? "success" : "default"}
+                      variant={row.tipe_file === "glb" ? "filled" : "outlined"}
+                      sx={{ fontWeight: 600, fontSize: 11 }}
+                    />
+                  </TableCell>
 
                   <TableCell>
                     <Chip
-                      label={(row.akses || "private").toUpperCase()}
+                      label={(row.akses).toUpperCase()}
                       size="small"
                       color={row.akses === "public" ? "success" : "default"}
                       variant={row.akses === "public" ? "filled" : "outlined"}

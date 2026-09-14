@@ -17,7 +17,6 @@ const DB_SCHEMA = process.env.POSTGIS_SCHEMA;
 export async function POST(request) {
     // 1. Validasi Autentikasi (Tambahkan parameter `request`)
     const { payload, error, status } = requireAuth(request, "admin");
-    console.log(payload);
     if (error) {
         return NextResponse.json({ message: error }, { status });
     }

@@ -6,9 +6,10 @@ import {
   Avatar, Chip, IconButton, Tooltip, CircularProgress, Alert,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import LayersIcon from "@mui/icons-material/Layers";
 
-const ListData2D = ({ search, onDelete }) => {
+const ListData2D = ({ search, onDelete, onUpdate }) => {
   const { data: session, status } = useSession();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -159,6 +160,11 @@ const ListData2D = ({ search, onDelete }) => {
               </Typography>
             </TableCell>
             <TableCell align="right">
+              <Tooltip title="Update layer">
+                <IconButton size="small" onClick={() => onUpdate(row)} sx={{ color: "#4F46E5" }}>
+                  <EditIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
               <Tooltip title="Hapus layer">
                 <IconButton size="small" onClick={() => onDelete(row)} sx={{ color: "#DC2626" }}>
                   <DeleteIcon fontSize="small" />

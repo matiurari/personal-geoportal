@@ -10,12 +10,15 @@ import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 import Swal from "sweetalert2";
 import TambahData2D from "./TambahData2D";
+import UpdateData2D from "./UpdateData2D";
 import ListData2D from "./ListData2D";
 
 export default function KatalogData2D() {
   const { data: session } = useSession();
   const [search, setSearch] = useState("");
   const [openCreate, setOpenCreate] = useState(false);
+  const [openUpdate, setOpenUpdate] = useState(false);
+  const [selectedRow, setSelectedRow] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [form, setForm] = useState({ layer_name: "", file: null, akses: "private", editable: "false" });
@@ -26,41 +29,46 @@ export default function KatalogData2D() {
   };
 
   const handleDelete = async (row) => {
-      const confirm = await Swal.fire({
-        title: `Hapus "${row.layer_name}"?`,
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Ya, hapus",
-        cancelButtonText: "Batal",
-        confirmButtonColor: "#DC2626",
-      });
-      if (!confirm.isConfirmed) return;
+    const confirm = await Swal.fire({
+      title: `Hapus "${row.layer_name}"?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Ya, hapus",
+      cancelButtonText: "Batal",
+      confirmButtonColor: "#DC2626",
+    });
+    if (!confirm.isConfirmed) return;
 
-      const accessToken = session?.accessToken;
-      if (!accessToken) {
-        Swal.fire("Gagal!", "Access token tidak tersedia.", "error");
-        return;
-      }
+    const accessToken = session?.accessToken;
+    if (!accessToken) {
+      Swal.fire("Gagal!", "Access token tidak tersedia.", "error");
+      return;
+    }
 
-      try {
-        const res = await fetch(`/portal/api/katalog-data-2d/delete?data_2d_id=${row.data_2d_id}`,
-          {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${accessToken}` },
-          }
-        );
-
-        const result = await res.json();
-
-        if (!res.ok) {
-          throw new Error(result.message || result.error || "Gagal menghapus layer");
+    try {
+      const res = await fetch(`/portal/api/katalog-data-2d/delete?data_2d_id=${row.data_2d_id}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${accessToken}` },
         }
+      );
 
-        Swal.fire("Terhapus", result.message || "Layer berhasil dihapus", "success");
-        setRefreshKey((k) => k + 1);
-      } catch (err) {
-        Swal.fire("Gagal!", err.message || "Terjadi kesalahan saat menghapus", "error");
+      const result = await res.json();
+
+      if (!res.ok) {
+        throw new Error(result.message || result.error || "Gagal menghapus layer");
       }
+
+      Swal.fire("Terhapus", result.message || "Layer berhasil dihapus", "success");
+      setRefreshKey((k) => k + 1);
+    } catch (err) {
+      Swal.fire("Gagal!", err.message || "Terjadi kesalahan saat menghapus", "error");
+    }
+  };
+
+  const handleUpdate = (row) => {
+    setSelectedRow(row);
+    setOpenUpdate(true);
   };
 
   return (
@@ -102,9 +110,10 @@ export default function KatalogData2D() {
       />
 
       <Paper sx={{ borderRadius: 4, overflow: "hidden", border: "1px solid #EEF0F4", boxShadow: "0 1px 2px rgba(16,24,40,0.06)" }}>
-        <ListData2D key={refreshKey} search={search} onDelete={handleDelete} />
+        <ListData2D key={refreshKey} search={search} onDelete={handleDelete} onUpdate={handleUpdate} />
       </Paper>
 
+      {/* Dialog Tambah Layer */}
       <Dialog
         open={openCreate}
         onClose={() => !submitting && setOpenCreate(false)}
@@ -128,6 +137,26 @@ export default function KatalogData2D() {
             Batal
           </Button>
         </DialogActions>
+      </Dialog>
+
+      {/* Dialog Update Layer (akses & editable) */}
+      <Dialog
+        open={openUpdate}
+        onClose={() => !submitting && setOpenUpdate(false)}
+        fullWidth
+        maxWidth="sm"
+        slotProps={{ paper: { sx: { bgcolor: "#fff", color: "#1E1E2D", borderRadius: 3 } } }}
+      >
+        <DialogTitle sx={{ fontWeight: 700, color: "#1E1E2D" }}>Update Layer</DialogTitle>
+        <DialogContent>
+          <UpdateData2D
+            row={selectedRow}
+            submitting={submitting}
+            setSubmitting={setSubmitting}
+            onClose={() => setOpenUpdate(false)}
+            onSuccess={() => setRefreshKey((k) => k + 1)}
+          />
+        </DialogContent>
       </Dialog>
     </Box>
   );
