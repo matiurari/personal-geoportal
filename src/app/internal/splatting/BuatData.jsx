@@ -22,7 +22,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import MemoryIcon from '@mui/icons-material/Memory';
 import CenterFocusWeakIcon from '@mui/icons-material/CenterFocusWeak';
 
-const MAX_ITERS = 20000;
+const MAX_ITERS = 100000;
 
 const STAGE_LABELS = {
     decode: 'Membaca foto...',
@@ -111,7 +111,7 @@ export default function BuatData() {
             // splatBudget dinaikkan ke 2.500.000 agar detail tidak dipotong (menghasilkan file ~150MB+)
             const session = createSession({
                 maxIters: MAX_ITERS,
-                splatBudget: 2500000,
+                splatBudget: 1000000,
                 shDegree: 3,
             });
             sessionRef.current = session;

@@ -41,5 +41,6 @@ model katalog_data_3d {
   pitch      Int?
   roll       Int?
   scale      Int?
+  tipe_file  String? @db.VarChar
   users      users?  @relation(fields: [author], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "katalog_data_3d_users_fk")
 }

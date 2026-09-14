@@ -31,8 +31,9 @@ export async function POST(request) {
         // 2. Generate UUID terlebih dahulu
         const data_3d_id = crypto.randomUUID();
 
-        // Dapatkan ekstensi asli dari file (misal: .glb atau .zip)
-        const fileExtension = path.extname(file.name) || ".glb";
+        // Dapatkan ekstensi asli dari file
+        const fileExtension = path.extname(file.name); // .glb / .ply — dipakai untuk nama file fisik
+        const tipeFile = fileExtension.replace(".", "").toLowerCase(); // "glb" / "ply" — disimpan ke DB
 
         // Buat nama file berdasarkan UUID semata
         const filename = `${data_3d_id}${fileExtension}`;
@@ -66,6 +67,7 @@ export async function POST(request) {
                 pitch: parseFloat(pitch),
                 roll: parseFloat(roll),
                 scale: parseFloat(scale),
+                tipe_file: tipeFile,
                 author: payload.id,
             },
         });

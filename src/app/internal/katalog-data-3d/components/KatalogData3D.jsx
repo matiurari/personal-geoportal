@@ -24,18 +24,16 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import TambahData from "./TambahData";
-import { Close, Visibility } from "@mui/icons-material";
+import { Visibility } from "@mui/icons-material";
 import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import HapusData from "./HapusData";
 import UpdateData from "./UpdateData";
 
-const PreviewCesiumModal = dynamic(
-  () => import("./PreviewCesiumModal"),
-  { ssr: false }
-);
+// Keduanya butuh WebGL/browser API — wajib ssr: false
+const PreviewCesiumModal = dynamic(() => import("./PreviewCesiumModal"), { ssr: false });
+const PreviewPlyModal = dynamic(() => import("./PreviewPlyModal"), { ssr: false });
 
-// Nilai default form Tambah Data — dipakai saat modal dibuka & ditutup
 const DEFAULT_FORM = {
   nama: "",
   file: null,
@@ -49,7 +47,6 @@ const DEFAULT_FORM = {
 };
 
 export default function KatalogData3D() {
-  // Inisialisasi state awal dengan array kosong
   const [tableData, setTableData] = useState([]);
   const [search, setSearch] = useState("");
   const [filteredData, setFilteredData] = useState([]);
@@ -63,15 +60,11 @@ export default function KatalogData3D() {
 
   const session = useSession();
 
-  // Fungsi Fetch Data dari Client Side
   const getData = async () => {
     try {
       const res = await fetch("/portal/api/katalog-data-3d/list", {
-        headers: {
-          Authorization: `Bearer ${session?.data?.accessToken}`,
-        },
+        headers: { Authorization: `Bearer ${session?.data?.accessToken}` },
       });
-
       if (res.ok) {
         const result = await res.json();
         setTableData(result.data || result);
@@ -81,23 +74,21 @@ export default function KatalogData3D() {
     }
   };
 
-  // 1. Trigger Fetch Awal saat Komponen Di-mount / Token Siap
   useEffect(() => {
     if (session?.data?.accessToken) {
       getData();
     }
   }, [session?.data?.accessToken]);
 
-  // 2. Handling Pencarian dan Filter Data
   useEffect(() => {
     if (!search.trim()) {
       setFilteredData(tableData);
       return;
     }
     const query = search.toLowerCase();
-    const result = (tableData || []).filter((item) => {
-      return item.nama?.toLowerCase().includes(query);
-    });
+    const result = (tableData || []).filter((item) =>
+      item.nama?.toLowerCase().includes(query)
+    );
     setFilteredData(result);
   }, [search, tableData]);
 
@@ -122,14 +113,14 @@ export default function KatalogData3D() {
   };
 
   const handleOpenDelete = (item) => {
-    setOpenDelete(true)
-    setFocusItem(item)
-  }
+    setOpenDelete(true);
+    setFocusItem(item);
+  };
 
   const handleCloseDelete = () => {
-    setOpenDelete(false)
+    setOpenDelete(false);
     setFocusItem(null);
-  }
+  };
 
   const handleOpenEdit = (item) => {
     setOpenEdit(true);
@@ -139,28 +130,17 @@ export default function KatalogData3D() {
   const handleCloseEdit = () => {
     setOpenEdit(false);
     setFocusItem(null);
-  }
+  };
 
   return (
     <Box sx={{ p: 1 }}>
-      {/* Header Section */}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          mb: 2,
-          flexWrap: "wrap",
-          gap: 2,
-        }}
-      >
+      <Box sx={{ display: "flex", alignItems: "center", mb: 2, flexWrap: "wrap", gap: 2 }}>
         <Typography variant="h5" fontWeight={700} sx={{ color: "#1E1E2D" }}>
           Katalog Data 3D
         </Typography>
-
-
       </Box>
+
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2, height: "40px" }}>
-        {/* Search Input */}
         <TextField
           placeholder="Cari nama layer..."
           size="small"
@@ -206,30 +186,12 @@ export default function KatalogData3D() {
         ) : null}
       </Box>
 
-      {/* Data Table */}
-      <Paper
-        sx={{
-          borderRadius: 3,
-          overflow: "hidden",
-          border: "1px solid #E5E7EB",
-          boxShadow: "0 1px 3px rgba(16,24,40,0.1)",
-        }}
-      >
+      <Paper sx={{ borderRadius: 3, overflow: "hidden", border: "1px solid #E5E7EB", boxShadow: "0 1px 3px rgba(16,24,40,0.1)" }}>
         <Table>
           <TableHead>
-            <TableRow
-              sx={{
-                "& .MuiTableCell-root": {
-                  bgcolor: "#1E1E2D",
-                  color: "#fff",
-                  fontWeight: 600,
-                  fontSize: 13,
-                  letterSpacing: 0.3,
-                },
-              }}
-            >
+            <TableRow sx={{ "& .MuiTableCell-root": { bgcolor: "#1E1E2D", color: "#fff", fontWeight: 600, fontSize: 13, letterSpacing: 0.3 } }}>
               <TableCell>Nama Layer</TableCell>
-              <TableCell>URL File (.GLB)</TableCell>
+              <TableCell>URL File</TableCell>
               <TableCell>Koordinat (Lat, Long)</TableCell>
               <TableCell>Pembuat</TableCell>
               <TableCell>Akses</TableCell>
@@ -240,14 +202,8 @@ export default function KatalogData3D() {
           <TableBody>
             {filteredData?.length > 0 ? (
               filteredData.map((row) => (
-                <TableRow
-                  key={row.data_3d_id}
-                  hover
-                  sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-                >
-                  <TableCell sx={{ fontWeight: 600, color: "#111827" }}>
-                    {row.nama}
-                  </TableCell>
+                <TableRow key={row.data_3d_id} hover sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
+                  <TableCell sx={{ fontWeight: 600, color: "#111827" }}>{row.nama}</TableCell>
 
                   <TableCell>
                     <Link
@@ -273,9 +229,7 @@ export default function KatalogData3D() {
                     {row.latitude?.toFixed(4)}, {row.longitude?.toFixed(4)}
                   </TableCell>
 
-                  <TableCell sx={{ color: "#374151" }}>
-                    {row.users?.email || "-"}
-                  </TableCell>
+                  <TableCell sx={{ color: "#374151" }}>{row.users?.email || "-"}</TableCell>
 
                   <TableCell>
                     <Chip
@@ -288,7 +242,7 @@ export default function KatalogData3D() {
                   </TableCell>
 
                   <TableCell align="center">
-                    <Tooltip title="Preview di Cesium">
+                    <Tooltip title={row.tipe_file === "ply" ? "Preview Gaussian Splat" : "Preview di Cesium"}>
                       <IconButton size="small" color="primary" onClick={() => handleOpenPreview(row)}>
                         <Visibility fontSize="small" />
                       </IconButton>
@@ -314,9 +268,7 @@ export default function KatalogData3D() {
               <TableRow>
                 <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
                   <Typography variant="body1" color="text.secondary">
-                    {search
-                      ? "Tidak ada data 3D yang sesuai dengan pencarian."
-                      : "Belum ada katalog data 3D."}
+                    {search ? "Tidak ada data 3D yang sesuai dengan pencarian." : "Belum ada katalog data 3D."}
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -336,19 +288,26 @@ export default function KatalogData3D() {
         />
       </Modal>
 
-      {/* Modal Preview Cesium */}
+      {/* Modal Preview — pilih komponen berdasarkan tipe_file milik data yang dipilih */}
       <Modal open={openPreview} onClose={handleClosePreview}>
-        <PreviewCesiumModal
-          openPreview={openPreview}
-          onClose={handleClosePreview}
-          item={focusItem}
-          handleClosePreview={handleClosePreview}
-          accessToken={session?.data?.accessToken}
-        />
+        {focusItem?.tipe_file === "ply" ? (
+          <PreviewPlyModal
+            openPreview={openPreview}
+            item={focusItem}
+            handleClosePreview={handleClosePreview}
+          />
+        ) : (
+          <PreviewCesiumModal
+            openPreview={openPreview}
+            item={focusItem}
+            handleClosePreview={handleClosePreview}
+            accessToken={session?.data?.accessToken}
+          />
+        )}
       </Modal>
 
       {/* Modal Hapus Data */}
-      <Modal open={openDelete} onClose={handleCloseDelete} >
+      <Modal open={openDelete} onClose={handleCloseDelete}>
         <HapusData
           item={focusItem}
           accessToken={session?.data?.accessToken}

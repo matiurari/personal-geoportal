@@ -5,7 +5,8 @@ export async function GET(request) {
     try {
         const data = await db.katalog_data_3d.findMany({
             where: {
-                akses: "public"
+                akses: "public",
+                tipe_file: "ply"
             },
             select: {
                 data_3d_id: true,
@@ -17,6 +18,7 @@ export async function GET(request) {
                 heading: true,
                 pitch: true,
                 roll: true,
+                tipe_file: true,
                 users: {
                     select: {
                         email: true
