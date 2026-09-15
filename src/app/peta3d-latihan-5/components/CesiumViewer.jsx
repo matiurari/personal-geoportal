@@ -14,7 +14,7 @@ const CESIUM_BASE_URL = `https://cesium.com/downloads/cesiumjs/releases/${CESIUM
 const CESIUM_SCRIPT_URL = `${CESIUM_BASE_URL}Cesium.js`;
 const CESIUM_STYLE_URL = `${CESIUM_BASE_URL}Widgets/widgets.css`;
 
-const CESIUM_ION_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjRhOVVEZk9DNEJjTU5MblYiLCJqdGkiOiJlMmI4M2IzZi02MWI3LTRiODAtYThjMi1hZTM4ZjlmOTYxMWMiLCJpZCI6NDc0NjE2LCJzdWIiOiJmemFhMjkiLCJpc3MiOiJodHRwczovL2FwaS5jZXNpdW0uY29tIiwiYXVkIjoiTGF0aWhhbiAzZCBrZWR1YSIsImlhdCI6MTc4ODMzMDU4MH0.qIdGj1zCtUX4L-gGOCJCnZemWjpGFGc7mQJVE3nRIoQ';
+const CESIUM_ION_TOKEN = process.env.CESIUM_ION_TOKEN;
 
 const LOKASI_AWAL = {
   latitude: -6.2432495,
