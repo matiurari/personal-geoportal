@@ -3,7 +3,9 @@ const nextConfig = {
   /* config options here */
   output: "standalone",
   basePath: "/portal",
-  reactStrictMode: false
+  env: {
+    CESIUM_ION_TOKEN: process.env.CESIUM_ION_TOKEN
+  }
 };
 
 export default nextConfig;
