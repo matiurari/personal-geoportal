@@ -41,7 +41,7 @@ const UpdateAkun = ({ item, handleCloseEdit, getData, accessToken }) => {
             setSubmitting(true);
 
             const response = await fetch("/portal/api/users/update", {
-                method: "POST",
+                method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${accessToken}`,

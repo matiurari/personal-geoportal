@@ -141,7 +141,7 @@ const UpdateData = ({ item, handleCloseEdit, getData, accessToken }) => {
             formData.append("scale", form.scale);
 
             const response = await fetch("/portal/api/katalog-data-3d/update", {
-                method: "POST",
+                method: "PATCH",
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
                 },

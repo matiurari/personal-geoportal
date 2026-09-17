@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "../../../../../lib/db";
 import { requireAuth } from "../../../../../lib/auth/verifyBearerToken";
 
-export async function POST(request) {
+export async function PATCH(request) {
     // 1. Validasi Autentikasi
     const { payload, error, status } = requireAuth(request, "admin");
     if (error) {

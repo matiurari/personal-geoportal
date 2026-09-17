@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { Pool } from "pg";
 import crypto from "crypto";
-import { db } from "../../../../../lib/db"; // Pastikan Prisma Client kamu di-import di sini
+import { db } from "../../../../../lib/db";
 import { requireAuth } from "../../../../../lib/auth/verifyBearerToken";
 
 const pool = new Pool({
@@ -15,7 +15,6 @@ const pool = new Pool({
 const DB_SCHEMA = process.env.POSTGIS_SCHEMA;
 
 export async function POST(request) {
-    // 1. Validasi Autentikasi (Tambahkan parameter `request`)
     const { payload, error, status } = requireAuth(request, "admin");
     if (error) {
         return NextResponse.json({ message: error }, { status });
@@ -26,8 +25,8 @@ export async function POST(request) {
         const formData = await request.formData();
         const file = formData.get("file");
         const layerNameInput = formData.get("layer_name");
-        const akses = formData.get("akses"); // 'public' | 'private'
-        const isEditable = formData.get("editable") === "true"; // boolean
+        const akses = formData.get("akses");
+        const isEditable = formData.get("editable") === "true";
 
         if (!file || typeof file === "string") {
             return NextResponse.json({ error: "File GeoJSON tidak ditemukan" }, { status: 400 });
@@ -46,7 +45,6 @@ export async function POST(request) {
             return NextResponse.json({ error: "GeoJSON kosong" }, { status: 400 });
         }
 
-        // 2. Ambil nama properti GeoJSON & ubah jadi lowercase
         const rawSampleProps = features[0]?.properties || {};
         const propMap = {};
         Object.keys(rawSampleProps).forEach(rawKey => {
@@ -56,7 +54,6 @@ export async function POST(request) {
 
         const cleanPropKeys = Object.keys(propMap);
 
-        // 3. Buat Nama Tabel Unik di PostGIS
         const uniqueId = crypto.randomUUID().slice(0, 8);
         const tableName = `${layerNameInput.replace(/[^a-zA-Z0-9_]/g, "_")}_${uniqueId}`.toLowerCase();
 
@@ -66,7 +63,6 @@ export async function POST(request) {
             ? cleanPropKeys.map(k => `"${k}" TEXT`).join(", ") + ","
             : "";
 
-        // 4. Buat Tabel di PostGIS Schema "gis"
         await client.query(`
       CREATE TABLE "${DB_SCHEMA}"."${tableName}" (
         id SERIAL PRIMARY KEY,
@@ -75,7 +71,6 @@ export async function POST(request) {
       );
     `);
 
-        // 5. Insert Data Geometri ke PostGIS
         for (const feature of features) {
             const props = feature.properties || {};
             const colNames = ["the_geom"];
@@ -99,10 +94,8 @@ export async function POST(request) {
             );
         }
 
-        // Indeks Spasial
         await client.query(`CREATE INDEX ON "${DB_SCHEMA}"."${tableName}" USING GIST (the_geom);`);
 
-        // Hitung Bounding Box Real
         const bboxResult = await client.query(`
       SELECT 
         ST_XMin(ST_Extent(the_geom)) as minx,
@@ -116,11 +109,24 @@ export async function POST(request) {
 
         const { minx, miny, maxx, maxy } = bboxResult.rows[0];
 
-        // 6. Publish Ke GeoServer
         const geoserverUrl = process.env.GEOSERVER_URL;
         const workspace = process.env.GEOSERVER_WORKSPACE;
         const existingDatastore = process.env.GEOSERVER_POSTGIS_DATASTORE;
         const auth = Buffer.from(`${process.env.GEOSERVER_USERNAME}:${process.env.GEOSERVER_PASSWORD}`).toString("base64");
+
+        // --- PERBAIKAN UTAMA: definisikan attributes secara eksplisit ---
+        // Ini menghindari GeoServer gagal auto-introspeksi kolom dari datastore,
+        // yang jadi penyebab error "no attributes were specified"
+        const attributesList = [
+            {
+                name: "the_geom",
+                binding: "org.locationtech.jts.geom.Geometry",
+            },
+            ...cleanPropKeys.map((k) => ({
+                name: k,
+                binding: "java.lang.String",
+            })),
+        ];
 
         const publishBody = {
             featureType: {
@@ -132,6 +138,9 @@ export async function POST(request) {
                 projectionPolicy: "FORCE_DECLARED",
                 enabled: true,
                 advertised: true,
+                attributes: {
+                    attribute: attributesList,
+                },
                 metadata: {
                     entry: [
                         { "@key": "disable.wfs.transactions", "$": (!isEditable).toString() }
@@ -158,7 +167,6 @@ export async function POST(request) {
             throw new Error(`Gagal Publish ke GeoServer: ${publishErr}`);
         }
 
-        // 6. Terapkan security layer
         await applyGeoServerLayerSecurity({
             geoserverUrl,
             workspace,
@@ -168,11 +176,9 @@ export async function POST(request) {
             auth,
         });
 
-        // 7. Tentukan URL WMS dan WFS
         const wmsUrl = `${geoserverUrl}/${workspace}/wms`;
         const wfsUrl = `${geoserverUrl}/${workspace}/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=${workspace}:${tableName}&outputFormat=application/json`;
 
-        // 8. Simpan Record ke Tabel katalog_data_2d & Include Data Author
         const newKatalogData = await db.katalog_data_2d.create({
             data: {
                 data_2d_id: crypto.randomUUID(),
@@ -181,7 +187,7 @@ export async function POST(request) {
                 is_editable: isEditable,
                 wms_url: wmsUrl,
                 wfs_url: wfsUrl,
-                author: payload.user_id, // Tetap gunakan user_id sebagai FK
+                author: payload.user_id,
             },
             select: {
                 data_2d_id: true,
@@ -205,24 +211,24 @@ export async function POST(request) {
         });
     } catch (error) {
         await client.query("ROLLBACK");
+        // --- Rollback tambahan: hapus tabel PostGIS kalau publish GeoServer gagal ---
+        // Mencegah tabel "yatim" yang sudah ter-commit tapi tidak pernah ter-publish
+        try {
+            await client.query(`DROP TABLE IF EXISTS "${DB_SCHEMA}"."${tableName}" CASCADE;`);
+        } catch (dropErr) {
+            console.error("Gagal membersihkan tabel setelah error:", dropErr);
+        }
         return NextResponse.json({ error: error.message }, { status: 500 });
     } finally {
         client.release();
     }
 }
 
-
 async function applyGeoServerLayerSecurity({ geoserverUrl, workspace, tableName, akses, isEditable, auth }) {
-    // Tentukan role yang diberi izin Read & Write
-    // Jika akses 'private', hanya ADMIN yang bisa Read. Jika 'public', ROLE_ANONYMOUS & ADMIN bisa Read.
     const readRoles = akses === "private" ? ["ADMIN"] : ["ROLE_ANONYMOUS", "ADMIN"];
-
-    // Jika isEditable = true, beri akses Write ke ADMIN (atau role editor sesuai kebutuhan aplikasi)
     const writeRoles = isEditable ? ["ADMIN"] : [];
-
     const layerPattern = `${workspace}.${tableName}`;
 
-    // Rule Read
     if (readRoles.length > 0) {
         await fetch(`${geoserverUrl}/rest/security/acl/layers`, {
             method: "POST",
@@ -236,7 +242,6 @@ async function applyGeoServerLayerSecurity({ geoserverUrl, workspace, tableName,
         });
     }
 
-    // Rule Write
     if (writeRoles.length > 0) {
         await fetch(`${geoserverUrl}/rest/security/acl/layers`, {
             method: "POST",

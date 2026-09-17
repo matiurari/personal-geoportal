@@ -16,13 +16,12 @@ const HapusAkun = ({ item, accessToken, getData, handleCloseDelete }) => {
         try {
             setSubmitting(true);
 
-            const response = await fetch("/portal/api/users/delete", {
-                method: "POST",
+            const response = await fetch(`/portal/api/users/delete?user_id=${item.user_id}`, {
+                method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${accessToken}`,
                 },
-                body: JSON.stringify({ user_id: item.user_id }),
             });
 
             const result = await response.json();
