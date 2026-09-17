@@ -11,7 +11,7 @@ export async function POST(request) {
     }
 
     const data = await request.json();
-    const allowedRoles = ["editor", "admin"]; // daftar role yang diizinkan untuk dibuat
+    const allowedRoles = ["viewer", "admin"]; // daftar role yang diizinkan untuk dibuat
 
     if (data.role && !allowedRoles.includes(data.role)) {
         return NextResponse.json({ message: "Role tidak valid" }, { status: 400 });

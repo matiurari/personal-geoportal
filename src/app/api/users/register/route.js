@@ -39,7 +39,7 @@ export async function POST(request) {
                 nama: data.nama,
                 email: data.email,
                 password: hashedPassword,
-                role: "editor", // Default role
+                role: "viewer", // Default role
                 is_active: false, // Default status non-aktif
             },
         });
