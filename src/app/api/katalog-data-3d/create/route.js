@@ -52,7 +52,7 @@ export async function POST(request) {
         // Tulis file ke storage lokal
         await writeFile(filePath, buffer);
 
-        const fileUrl = `${process.env.URL_BASE_PATH}/api/katalog-data-3d/models/${data_3d_id}`;
+        const fileUrl = `${process.env.NEXTAUTH_URL}/api/katalog-data-3d/models/${data_3d_id}`;
 
         // 3. Simpan ke Database Prisma dengan UUID yang sama
         await db.katalog_data_3d.create({

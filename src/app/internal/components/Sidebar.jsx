@@ -23,8 +23,11 @@ export default function Sidebar() {
       { label: "Dashboard", path: "/internal", icon: <Dashboard /> },
       { label: "Katalog Data 2D", path: "/internal/katalog-data-2d", icon: <LayersIcon /> },
       { label: "Katalog Data 3D", path: "/internal/katalog-data-3d", icon: <ViewInArIcon /> },
-      { label: "Gaussian Splatting", path: "/internal/splatting", icon: <ThreeDRotation /> }
     ]
+    if (session.data.user.role !== "viewer") {
+      menuItems.push({ label: "Gaussian Splatting", path: "/internal/splatting", icon: <ThreeDRotation /> })
+    }
+
     if (session.data.user.role === "super_admin") {
       menuItems.push({ label: "Kelola Akun", path: "/internal/kelola-akun", icon: <ManageAccountsIcon /> })
     }
