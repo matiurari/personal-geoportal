@@ -15,7 +15,7 @@ export async function POST(request) {
     try {
         const formData = await request.formData();
         const file = formData.get("file");
-        const name = formData.get("name");
+        const model_name = formData.get("model_name");
         const akses = formData.get("akses");
         const latitude = formData.get("latitude");
         const longitude = formData.get("longitude");
@@ -58,7 +58,7 @@ export async function POST(request) {
         await db.katalog_data_3d.create({
             data: {
                 data_3d_id: data_3d_id,
-                name: name,
+                model_name: model_name,
                 akses: akses,
                 url: fileUrl,
                 latitude: parseFloat(latitude),
