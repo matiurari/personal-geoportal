@@ -4,23 +4,35 @@ import StorageIcon from "@mui/icons-material/Storage";
 import MapIcon from "@mui/icons-material/Map";
 import Storage3dIcon from "@mui/icons-material/ViewInAr";
 import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
 
-export default function Dashboard({accessToken}) {
+export default function Dashboard({ accessToken }) {
   const [stats, setStats] = useState(null);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (accessToken) {
-      const loadData = async () => {
+    if (!accessToken) return;
+
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
         const response = await fetch("/portal/api/statistik", {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
-        const {data} = await response.json();
-        setStats(data);
-      };
-      loadData();
-    }
+        const json = await response.json();
+        if (!response.ok) {
+          throw new Error(json.message || "Gagal mengambil data statistik");
+        }
+        setStats(json.data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
   }, [accessToken]);
 
   const cards = [
@@ -33,16 +45,22 @@ export default function Dashboard({accessToken}) {
     },
     {
       label: "Total Data 2D",
-      value: stats?.data_2d.total,
-      sub: [{ public: stats?.data_2d.public }, { private: stats?.data_2d.private }],
+      value: stats?.data_2d?.total,
+      sub: [
+        { label: "Public", value: stats?.data_2d?.public ?? 0 },
+        { label: "Private", value: stats?.data_2d?.private ?? 0 },
+      ],
       icon: <MapIcon />,
       color: "#16A34A",
       bg: "#ECFDF3",
     },
     {
       label: "Total Data 3D",
-      value: stats?.data_3d.total,
-      sub: [{ public: stats?.data_3d.public }, { private: stats?.data_3d.private }],
+      value: stats?.data_3d?.total,
+      sub: [
+        { label: "Public", value: stats?.data_3d?.public ?? 0 },
+        { label: "Private", value: stats?.data_3d?.private ?? 0 },
+      ],
       icon: <Storage3dIcon />,
       color: "#F59E0B",
       bg: "#FFFBEB",
@@ -90,21 +108,40 @@ export default function Dashboard({accessToken}) {
               >
                 {s.icon}
               </Box>
+
               <Box sx={{ minWidth: 0 }}>
-                <Typography variant="h4" fontWeight={700}>
-                  {s.value}
-                </Typography>
+                {loading ? (
+                  <Skeleton variant="text" width={48} height={44} />
+                ) : (
+                  <Typography variant="h4" fontWeight={700}>
+                    {s.value ?? 0}
+                  </Typography>
+                )}
                 <Typography color="text.secondary" fontSize={14}>
                   {s.label}
                 </Typography>
               </Box>
-              <Box sx={{ display: "flex", flexDirection: "column" }}>
-                {s.sub && s.sub.map((item, i) => (
-                  <Typography color="text.secondary" fontSize={12} key={i}>
-                    {item.public ? `${item.public} Data Public` : `${item.private} Data Private`}
-                  </Typography>
-                ))}
-              </Box>
+
+              {s.sub && (
+                <Box sx={{ display: "flex", flexDirection: "column", ml: "auto" }}>
+                  {loading ? (
+                    <>
+                      <Skeleton variant="text" width={80} />
+                      <Skeleton variant="text" width={80} />
+                    </>
+                  ) : (
+                    s.sub.map((item) => (
+                      <Typography
+                        key={item.label}
+                        color="text.secondary"
+                        fontSize={12}
+                      >
+                        {item.value} Data {item.label}
+                      </Typography>
+                    ))
+                  )}
+                </Box>
+              )}
             </Paper>
           </Grid>
         ))}

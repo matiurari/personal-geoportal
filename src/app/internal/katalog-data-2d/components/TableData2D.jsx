@@ -7,9 +7,9 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import LayersIcon from "@mui/icons-material/Layers";
-import { Download } from "@mui/icons-material";
+import { Download, Visibility } from "@mui/icons-material";
 
-const TableData2D = ({ search, onDelete, onUpdate, onDownload, accessToken, role }) => {
+const TableData2D = ({ search, onDelete, onUpdate, onDownload, accessToken, role, onPreview }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -146,6 +146,11 @@ const TableData2D = ({ search, onDelete, onUpdate, onDownload, accessToken, role
               <Tooltip title="Download layer">
                 <IconButton size="small" color="error" onClick={() => onDownload(row)}>
                   <Download fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Preview layer">
+                <IconButton size="small" color="primary" onClick={() => onPreview(row)}>
+                  <Visibility fontSize="small" />
                 </IconButton>
               </Tooltip>
             </TableCell>

@@ -145,28 +145,6 @@ export default function Topbar() {
             gap: 1,
           }}
         >
-          <Tooltip title="Notifikasi">
-            <IconButton
-              size="small"
-              sx={{
-                width: 36,
-                height: 36,
-                color: "#64748B",
-                "&:hover": {
-                  bgcolor: "#F1F5F9",
-                },
-              }}
-            >
-              <Badge
-                color="error"
-                variant="dot"
-                overlap="circular"
-              >
-                <NotificationsNoneIcon fontSize="small" />
-              </Badge>
-            </IconButton>
-          </Tooltip>
-
           <Box
             sx={{
               width: "1px",

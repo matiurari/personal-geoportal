@@ -29,6 +29,7 @@ import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 import HapusData from "./HapusData";
 import UpdateData from "./UpdateData";
+import TableData3D from "./TableData3D";
 
 // Keduanya butuh WebGL/browser API — wajib ssr: false
 const PreviewCesiumModal = dynamic(() => import("./PreviewCesiumModal"), { ssr: false });
@@ -46,7 +47,7 @@ const DEFAULT_FORM = {
   scale: 1,
 };
 
-export default function KatalogData3D({accessToken}) {
+export default function KatalogData3D({ accessToken, role }) {
   const [tableData, setTableData] = useState([]);
   const [search, setSearch] = useState("");
   const [filteredData, setFilteredData] = useState([]);
@@ -58,12 +59,10 @@ export default function KatalogData3D({accessToken}) {
   const [openEdit, setOpenEdit] = useState(false);
   const [form, setForm] = useState(DEFAULT_FORM);
 
-  const session = useSession();
-
   const getData = async () => {
     try {
       const res = await fetch("/portal/api/katalog-data-3d/list", {
-        headers: { Authorization: `Bearer ${session?.data?.accessToken}` },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
       if (res.ok) {
         const result = await res.json();
@@ -75,10 +74,10 @@ export default function KatalogData3D({accessToken}) {
   };
 
   useEffect(() => {
-    if (session?.data?.accessToken) {
+    if (accessToken) {
       getData();
     }
-  }, [session?.data?.accessToken]);
+  }, [accessToken]);
 
   useEffect(() => {
     if (!search.trim()) {
@@ -166,7 +165,7 @@ export default function KatalogData3D({accessToken}) {
             },
           }}
         />
-        {session?.data?.user?.role !== "viewer" ? (
+        {role !== "viewer" ? (
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -186,113 +185,7 @@ export default function KatalogData3D({accessToken}) {
         ) : null}
       </Box>
 
-      <Paper
-        sx={{
-          borderRadius: 3,
-          overflow: "hidden",
-          border: (theme) => `1px solid ${theme.palette.divider}`,
-        }}
-      >
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Nama Model</TableCell>
-              <TableCell>URL File</TableCell>
-              <TableCell>Koordinat (Lat, Long)</TableCell>
-              <TableCell>Pembuat</TableCell>
-              <TableCell>Tipe File</TableCell>
-              <TableCell>Akses</TableCell>
-              <TableCell align="center">Aksi</TableCell>
-            </TableRow>
-          </TableHead>
-
-          <TableBody>
-            {filteredData?.length > 0 ? (
-              filteredData.map((row) => (
-                <TableRow key={row.data_3d_id} hover>
-                  <TableCell sx={{ fontWeight: 600 }}>{row.model_name}</TableCell>
-
-                  <TableCell>
-                    <Link
-                      href={row.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      underline="hover"
-                      color="primary"
-                      sx={{
-                        maxWidth: 220,
-                        display: "inline-block",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        verticalAlign: "middle",
-                      }}
-                    >
-                      {row.url}
-                    </Link>
-                  </TableCell>
-
-                  <TableCell sx={{ color: "text.secondary", fontSize: 13 }}>
-                    {row.latitude?.toFixed(4)}, {row.longitude?.toFixed(4)}
-                  </TableCell>
-
-                  <TableCell sx={{ color: "text.secondary" }}>{row.users?.email}</TableCell>
-
-                  <TableCell>
-                    <Chip
-                      label={(row.tipe_file).toUpperCase()}
-                      size="small"
-                      color={row.tipe_file === "glb" ? "primary" : "default"}
-                      variant={row.tipe_file === "glb" ? "filled" : "outlined"}
-                      sx={{ fontWeight: 600, fontSize: 11 }}
-                    />
-                  </TableCell>
-
-                  <TableCell>
-                    <Chip
-                      label={(row.akses).toUpperCase()}
-                      size="small"
-                      color={row.akses === "public" ? "primary" : "default"}
-                      variant={row.akses === "public" ? "filled" : "outlined"}
-                      sx={{ fontWeight: 600, fontSize: 11 }}
-                    />
-                  </TableCell>
-
-                  <TableCell align="center">
-                    <Tooltip title={row.tipe_file === "ply" ? "Preview Gaussian Splat" : "Preview di Cesium"}>
-                      <IconButton size="small" color="primary" onClick={() => handleOpenPreview(row)}>
-                        <Visibility fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                    {session?.data?.user?.role !== "viewer" ? (
-                      <>
-                        <Tooltip title="Edit Metadata">
-                          <IconButton size="small" color="secondary" onClick={() => handleOpenEdit(row)}>
-                            <EditIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Hapus Layer">
-                          <IconButton size="small" color="error" onClick={() => handleOpenDelete(row)}>
-                            <DeleteIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </>
-                    ) : null}
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
-                  <Typography variant="body1" color="text.secondary">
-                    {search ? "Tidak ada data 3D yang sesuai dengan pencarian." : "Belum ada katalog data 3D."}
-                  </Typography>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </Paper>
+      <TableData3D filteredData={filteredData} search={search} role={role} handleOpenDelete={handleOpenDelete} handleOpenEdit={handleOpenEdit} handleOpenPreview={handleOpenPreview} accessToken={accessToken}/>
 
       {/* Modal Form Tambah Data */}
       <Modal open={openAdd} onClose={handleCloseAdd}>
@@ -301,7 +194,7 @@ export default function KatalogData3D({accessToken}) {
           setForm={setForm}
           handleCloseAdd={handleCloseAdd}
           getData={getData}
-          accessToken={session?.data?.accessToken}
+          accessToken={accessToken}
         />
       </Modal>
 
@@ -318,7 +211,7 @@ export default function KatalogData3D({accessToken}) {
             openPreview={openPreview}
             item={focusItem}
             handleClosePreview={handleClosePreview}
-            accessToken={session?.data?.accessToken}
+            accessToken={accessToken}
           />
         )}
       </Modal>
@@ -327,7 +220,7 @@ export default function KatalogData3D({accessToken}) {
       <Modal open={openDelete} onClose={handleCloseDelete}>
         <HapusData
           item={focusItem}
-          accessToken={session?.data?.accessToken}
+          accessToken={accessToken}
           getData={getData}
           handleCloseDelete={handleCloseDelete}
         />
@@ -339,7 +232,7 @@ export default function KatalogData3D({accessToken}) {
           item={focusItem}
           handleCloseEdit={handleCloseEdit}
           getData={getData}
-          accessToken={session?.data?.accessToken}
+          accessToken={accessToken}
         />
       </Modal>
     </Box>

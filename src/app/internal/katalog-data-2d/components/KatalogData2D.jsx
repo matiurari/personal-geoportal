@@ -12,6 +12,7 @@ import Swal from "sweetalert2";
 import TambahData2D from "./TambahData2D";
 import UpdateData2D from "./UpdateData2D";
 import TableData2D from "./TableData2D";
+import PreviewData2D from "./PreviewData2D";
 
 export default function KatalogData2D({ accessToken, role }) {
   const [search, setSearch] = useState("");
@@ -21,6 +22,7 @@ export default function KatalogData2D({ accessToken, role }) {
   const [submitting, setSubmitting] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [form, setForm] = useState({ layer_name: "", file: null, akses: "private", editable: "false" });
+  const [openPreview, setOpenPreview] = useState(false);
 
   const handleOpenCreate = () => {
     setForm({ layer_name: "", file: null, akses: "private", editable: "false" });
@@ -64,29 +66,37 @@ export default function KatalogData2D({ accessToken, role }) {
       return;
     }
 
-    const filename = row.layer_name || "data_layer";
-    const aksesLayer = row.akses || "public";
-
-    const downloadUrl = `/portal/api/katalog-data-2d/download-data?url=${encodeURIComponent(row.wfs_url)}&filename=${encodeURIComponent(filename)}&akses=${aksesLayer}`;
+    // Nama file aman untuk filesystem (layer_name biasanya "workspace:table")
+    const safeFilename = (row.layer_name || "data_layer").replace(/[:/\\?*"<>|]/g, "_");
 
     try {
-      const response = await fetch(downloadUrl, {
+      // wfs_url sekarang mengarah ke API proxy internal (bukan langsung ke
+      // GeoServer). Proxy yang menentukan endpoint GeoServer sebenarnya dan
+      // mengecek akses public/private berdasarkan token ini, jadi kita fetch
+      // langsung ke sana tanpa lewat route download-data lagi.
+      const response = await fetch(row.wfs_url, {
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${accessToken}`, // Mengirim token agar lolos requireAuth di API Route
+          Authorization: `Bearer ${accessToken}`,
         },
       });
 
       if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.error || errData.message || "Gagal mendownload file.");
+        let message = "Gagal mendownload file.";
+        try {
+          const errData = await response.json();
+          message = errData.message || errData.error || message;
+        } catch {
+          // Respons bukan JSON (mis. error mentah dari GeoServer), pakai pesan default
+        }
+        throw new Error(message);
       }
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `${filename}.geojson`;
+      link.download = `${safeFilename}.geojson`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -100,6 +110,8 @@ export default function KatalogData2D({ accessToken, role }) {
     setSelectedRow(row);
     setOpenUpdate(true);
   };
+
+  const handlePreview = (row) => { setSelectedRow(row); setOpenPreview(true); };
 
   return (
     <Box>
@@ -140,7 +152,7 @@ export default function KatalogData2D({ accessToken, role }) {
       />
 
       <Paper sx={{ borderRadius: 4, overflow: "hidden", border: "1px solid #EEF0F4", boxShadow: "0 1px 2px rgba(16,24,40,0.06)" }}>
-        <TableData2D key={refreshKey} search={search} onDelete={handleDelete} onUpdate={handleUpdate} onDownload={handleDownload} accessToken={accessToken} role={role}/>
+        <TableData2D key={refreshKey} search={search} onDelete={handleDelete} onUpdate={handleUpdate} onDownload={handleDownload} accessToken={accessToken} role={role} onPreview={handlePreview} />
       </Paper>
 
       {/* Dialog Tambah Layer */}
@@ -188,6 +200,9 @@ export default function KatalogData2D({ accessToken, role }) {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Preview Data 2D */}
+      <PreviewData2D open={openPreview} onClose={() => setOpenPreview(false)} row={selectedRow} accessToken={accessToken} />
     </Box>
   );
 }
