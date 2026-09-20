@@ -14,7 +14,7 @@ const CESIUM_BASE_URL = `https://cesium.com/downloads/cesiumjs/releases/${CESIUM
 const CESIUM_SCRIPT_URL = `${CESIUM_BASE_URL}Cesium.js`;
 const CESIUM_STYLE_URL = `${CESIUM_BASE_URL}Widgets/widgets.css`;
 
-const CESIUM_ION_TOKEN = process.env.CESIUM_ION_TOKEN;
+const CESIUM_ION_TOKEN = process.env.NEXT_PUBLIC_CESIUM_ION_TOKEN;
 
 const LOKASI_AWAL = {
   latitude: -6.2432495,
