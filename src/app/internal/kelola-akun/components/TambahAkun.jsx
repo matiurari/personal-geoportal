@@ -21,8 +21,8 @@ const TambahAkun = ({ form, setForm, handleCloseAdd, getData, accessToken }) => 
 
     const handleSubmitData = async () => {
         try {
-            if (!form?.nama || !form?.email || !form?.password) {
-                alert("Nama, email, dan password wajib diisi!");
+            if (!form?.name || !form?.email || !form?.password) {
+                alert("Name, email, dan password wajib diisi!");
                 return;
             }
 
@@ -35,7 +35,7 @@ const TambahAkun = ({ form, setForm, handleCloseAdd, getData, accessToken }) => 
                     Authorization: `Bearer ${accessToken}`,
                 },
                 body: JSON.stringify({
-                    nama: form.nama,
+                    name: form.name,
                     email: form.email,
                     password: form.password,
                     is_active: form.is_active ?? true,
@@ -85,13 +85,13 @@ const TambahAkun = ({ form, setForm, handleCloseAdd, getData, accessToken }) => 
             </Box>
 
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5, mt: 1 }}>
-                {/* Nama */}
+                {/* Name */}
                 <TextField
-                    label="Nama"
+                    label="Name"
                     fullWidth
-                    value={form?.nama || ""}
+                    value={form?.name || ""}
                     onChange={(e) =>
-                        setForm && setForm((f) => ({ ...f, nama: e.target.value }))
+                        setForm && setForm((f) => ({ ...f, name: e.target.value }))
                     }
                     sx={textFieldStyle}
                 />

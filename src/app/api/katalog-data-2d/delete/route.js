@@ -11,25 +11,6 @@ const pool = new Pool({
 });
 
 const DB_SCHEMA = process.env.POSTGIS_SCHEMA;
-
-/**
- * DELETE /api/.../[id]  (atau sesuaikan dengan cara kamu mengambil id)
- * Body / query harus berisi: data_2d_id
- *
- * Urutan operasi (kebalikan dari proses create):
- * 1. Ambil record katalog_data_2d berdasarkan data_2d_id -> dapat layer_name (workspace:tableName)
- * 2. Hapus featureType + layer dari GeoServer
- * 3. DROP TABLE fisik di PostGIS (schema DB_SCHEMA)
- * 4. Hapus record dari katalog_data_2d
- *
- * Catatan penting:
- * - Karena operasi melibatkan 2 sistem berbeda (GeoServer via REST, Postgres via SQL)
- *   yang tidak bisa di-rollback lintas sistem, urutan di atas dipilih supaya:
- *   jika GeoServer gagal dihapus, data di database TIDAK ikut terhapus
- *   (state masih konsisten, bisa di-retry).
- * - Jika GeoServer mengembalikan 404 (resource sudah tidak ada), tetap lanjut
- *   membersihkan DB, supaya "orphan record" tidak nyangkut di katalog.
- */
 export async function DELETE(request) {
     let dataId;
 

@@ -29,7 +29,7 @@ import { Delete, Edit } from "@mui/icons-material";
 
 // Nilai default form Tambah Akun
 const DEFAULT_FORM = {
-  nama: "",
+  name: "",
   email: "",
   password: "",
   role: "viewer",
@@ -83,7 +83,7 @@ export default function KelolaAkun() {
     const query = search.toLowerCase();
     const result = (tableData || []).filter((item) => {
       return (
-        item.nama?.toLowerCase().includes(query) ||
+        item.name?.toLowerCase().includes(query) ||
         item.email?.toLowerCase().includes(query)
       );
     });
@@ -140,7 +140,7 @@ export default function KelolaAkun() {
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2, height: "40px" }}>
         {/* Search Input */}
         <TextField
-          placeholder="Cari nama atau email..."
+          placeholder="Cari name atau email..."
           size="small"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -207,7 +207,7 @@ export default function KelolaAkun() {
                 },
               }}
             >
-              <TableCell>Nama</TableCell>
+              <TableCell>Name</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>Role</TableCell>
               <TableCell>Status</TableCell>
@@ -227,7 +227,7 @@ export default function KelolaAkun() {
                     sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
                   >
                     <TableCell sx={{ fontWeight: 600, color: "#111827" }}>
-                      {row.nama}
+                      {row.name}
                     </TableCell>
 
                     <TableCell sx={{ color: "#374151" }}>{row.email}</TableCell>

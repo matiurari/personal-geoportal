@@ -177,6 +177,7 @@ export async function POST(request) {
             data: {
                 data_2d_id: crypto.randomUUID(),
                 layer_name: `${workspace}:${tableName}`,
+                layer_alias: layerNameInput,
                 akses: akses,
                 is_editable: isEditable,
                 wms_url: wmsUrl,

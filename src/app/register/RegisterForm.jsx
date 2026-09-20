@@ -10,7 +10,7 @@ const RegisterForm = () => {
     const router = useRouter();
 
     // State Input
-    const [nama, setNama] = useState("");
+    const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -26,7 +26,7 @@ const RegisterForm = () => {
         setError("");
 
         // 1. Validasi Input Kosong
-        if (!nama || !email || !password || !confirmPassword) {
+        if (!name || !email || !password || !confirmPassword) {
             setError("Semua field wajib diisi!");
             return;
         }
@@ -49,7 +49,7 @@ const RegisterForm = () => {
             const res = await fetch("/portal/api/users/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ nama, email, password }),
+                body: JSON.stringify({ name, email, password }),
             });
 
             if (!res.ok) {
@@ -117,13 +117,13 @@ const RegisterForm = () => {
                 </Alert>
             )}
 
-            {/* Field Nama */}
+            {/* Field Name */}
             <TextField
                 fullWidth
-                label="Nama Lengkap"
+                label="Name Lengkap"
                 type="text"
-                value={nama}
-                onChange={(e) => setNama(e.target.value)}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 margin="normal"
                 autoComplete="name"
                 disabled={loading}

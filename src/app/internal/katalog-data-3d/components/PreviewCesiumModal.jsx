@@ -169,7 +169,7 @@ export default function PreviewCesiumModal({ openPreview, item, handleClosePrevi
             }}>
             <Box sx={{ display: "flex", flexDirection: "row", justifyContent: "space-between", marginBottom: 3 }}>
                 <Typography id="modal-tambah-data-3d" variant="h6" sx={{ fontWeight: 700, color: "#1E1E2D" }}>
-                    {item?.nama}
+                    {item?.model_name}
                 </Typography>
                 <IconButton onClick={handleClosePreview} size="small" sx={{ color: "#6B7280" }}>
                     <Close />

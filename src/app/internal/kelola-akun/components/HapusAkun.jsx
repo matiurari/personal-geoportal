@@ -72,7 +72,7 @@ const HapusAkun = ({ item, accessToken, getData, handleCloseDelete }) => {
                 <WarningAmberRounded sx={{ fontSize: 48, color: "#F59E0B" }} />
                 <Typography sx={{ textAlign: "center", color: "#374151" }}>
                     Apakah Anda yakin ingin menghapus akun{" "}
-                    <b>{item.nama}</b> ({item.email})? Tindakan ini tidak dapat dibatalkan.
+                    <b>{item.name}</b> ({item.email})? Tindakan ini tidak dapat dibatalkan.
                 </Typography>
             </Box>
 

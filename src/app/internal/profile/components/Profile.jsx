@@ -93,7 +93,7 @@ const Profile = () => {
                             sx={{ marginTop: '-50px', mb: 2 }}
                         >
                             <Avatar
-                                alt={userData?.nama || 'User'}
+                                alt={userData?.name || 'User'}
                                 src="/avatar.jpg"
                                 sx={{
                                     width: 100,
@@ -104,7 +104,7 @@ const Profile = () => {
                                 }}
                             />
                             <Typography variant="h5" fontWeight="bold" align="center">
-                                {userData?.nama || 'Nama Tidak Tersedia'}
+                                {userData?.name || 'Name Tidak Tersedia'}
                             </Typography>
 
                             <Stack direction="row" spacing={1} alignitems="center" sx={{ mt: 0.5 }}>

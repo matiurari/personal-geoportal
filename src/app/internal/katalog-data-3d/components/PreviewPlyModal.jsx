@@ -134,7 +134,7 @@ export default function PreviewPlyModal({ openPreview, item, handleClosePreview 
         >
             <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, color: "#1E1E2D" }}>
-                    {item?.nama}
+                    {item?.model_name}
                 </Typography>
                 <IconButton onClick={handleClosePreview} size="small" sx={{ color: "#6B7280" }}>
                     <Close />

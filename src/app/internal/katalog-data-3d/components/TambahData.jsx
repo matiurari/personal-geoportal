@@ -19,19 +19,6 @@ const textFieldStyle = {
     },
 };
 
-// Style khusus untuk field disabled (Nama Layer, URL File) agar tetap terbaca jelas
-const disabledFieldStyle = {
-    ...textFieldStyle,
-    "& .MuiInputBase-input.Mui-disabled": {
-        color: "#1F2937",
-        WebkitTextFillColor: "#1F2937", // penting: override default fade Safari/Chrome
-    },
-    "& .MuiInputLabel-root.Mui-disabled": { color: "#6B7280" },
-    "& .MuiOutlinedInput-root.Mui-disabled .MuiOutlinedInput-notchedOutline": {
-        borderColor: "#D1D5DB",
-    },
-};
-
 const TambahData = ({ form, setForm, handleCloseAdd, getData, accessToken }) => {
     const mapRef = useRef(null);
     const mapInstanceRef = useRef(null);
@@ -102,7 +89,7 @@ const TambahData = ({ form, setForm, handleCloseAdd, getData, accessToken }) => 
 
             const formData = new FormData();
             formData.append("file", form.file);
-            formData.append("nama", form.nama || "");
+            formData.append("model_name", form.model_name || "");
             formData.append("akses", form.akses || "public");
             formData.append("latitude", form.latitude || centerPoint[0]);
             formData.append("longitude", form.longitude || centerPoint[1]);
@@ -170,12 +157,12 @@ const TambahData = ({ form, setForm, handleCloseAdd, getData, accessToken }) => 
                     <TextField
                         label="Nama Layer"
                         fullWidth
-                        value={form?.nama || ""}
+                        value={form?.model_name || ""}
                         onChange={(e) =>
                             setForm &&
                             setForm((f) => ({
                                 ...f,
-                                nama: e.target.value,
+                                model_name: e.target.value,
                             }))
                         }
                         sx={{

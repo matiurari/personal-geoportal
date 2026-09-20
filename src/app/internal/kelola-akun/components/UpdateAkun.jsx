@@ -89,7 +89,7 @@ const UpdateAkun = ({ item, handleCloseEdit, getData, accessToken }) => {
         >
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, color: "#1E1E2D" }}>
-                    Edit Akun: {item.nama}
+                    Edit Akun: {item.name}
                 </Typography>
                 <IconButton onClick={handleCloseEdit} size="small" sx={{ color: "#6B7280" }}>
                     <Close />
@@ -99,9 +99,9 @@ const UpdateAkun = ({ item, handleCloseEdit, getData, accessToken }) => {
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5, mt: 1 }}>
                 {/* Info yang tidak bisa diubah lewat endpoint update */}
                 <TextField
-                    label="Nama"
+                    label="Name"
                     fullWidth
-                    value={item.nama || ""}
+                    value={item.name || ""}
                     disabled
                     sx={disabledFieldStyle}
                 />

@@ -11,10 +11,9 @@ import AddIcon from "@mui/icons-material/Add";
 import Swal from "sweetalert2";
 import TambahData2D from "./TambahData2D";
 import UpdateData2D from "./UpdateData2D";
-import ListData2D from "./ListData2D";
+import TableData2D from "./TableData2D";
 
-export default function KatalogData2D() {
-  const { data: session } = useSession();
+export default function KatalogData2D({ accessToken, role }) {
   const [search, setSearch] = useState("");
   const [openCreate, setOpenCreate] = useState(false);
   const [openUpdate, setOpenUpdate] = useState(false);
@@ -38,13 +37,6 @@ export default function KatalogData2D() {
       confirmButtonColor: "#DC2626",
     });
     if (!confirm.isConfirmed) return;
-
-    const accessToken = session?.accessToken;
-    if (!accessToken) {
-      Swal.fire("Gagal!", "Access token tidak tersedia.", "error");
-      return;
-    }
-
     try {
       const res = await fetch(`/portal/api/katalog-data-2d/delete?data_2d_id=${row.data_2d_id}`,
         {
@@ -63,6 +55,44 @@ export default function KatalogData2D() {
       setRefreshKey((k) => k + 1);
     } catch (err) {
       Swal.fire("Gagal!", err.message || "Terjadi kesalahan saat menghapus", "error");
+    }
+  };
+
+  const handleDownload = async (row) => {
+    if (!row.wfs_url) {
+      alert("URL WFS tidak ditemukan untuk layer ini.");
+      return;
+    }
+
+    const filename = row.layer_name || "data_layer";
+    const aksesLayer = row.akses || "public";
+
+    const downloadUrl = `/portal/api/katalog-data-2d/download-data?url=${encodeURIComponent(row.wfs_url)}&filename=${encodeURIComponent(filename)}&akses=${aksesLayer}`;
+
+    try {
+      const response = await fetch(downloadUrl, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`, // Mengirim token agar lolos requireAuth di API Route
+        },
+      });
+
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || errData.message || "Gagal mendownload file.");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${filename}.geojson`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert(error.message);
     }
   };
 
@@ -110,7 +140,7 @@ export default function KatalogData2D() {
       />
 
       <Paper sx={{ borderRadius: 4, overflow: "hidden", border: "1px solid #EEF0F4", boxShadow: "0 1px 2px rgba(16,24,40,0.06)" }}>
-        <ListData2D key={refreshKey} search={search} onDelete={handleDelete} onUpdate={handleUpdate} />
+        <TableData2D key={refreshKey} search={search} onDelete={handleDelete} onUpdate={handleUpdate} onDownload={handleDownload} accessToken={accessToken} role={role}/>
       </Paper>
 
       {/* Dialog Tambah Layer */}

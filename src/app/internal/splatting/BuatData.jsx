@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useRef, useCallback } from 'react';
-import { createSession } from '../../../lib/splat/session';
 
 // Material UI Components (MUI v5)
 import {
@@ -21,6 +20,7 @@ import {
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import MemoryIcon from '@mui/icons-material/Memory';
 import CenterFocusWeakIcon from '@mui/icons-material/CenterFocusWeak';
+import { createSession } from '../../../../lib/splat';
 
 const MAX_ITERS = 100000;
 

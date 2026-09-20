@@ -26,7 +26,7 @@ export async function GET(request, { params }) {
       where: { user_id },
       select: {
         user_id: true,
-        nama: true,
+        name: true,
         email: true,
         role: true,
         is_active: true,

@@ -7,9 +7,9 @@ export async function POST(request) {
         const data = await request.json();
 
         // 1. Validasi sederhana input data
-        if (!data.email || !data.password || !data.nama) {
+        if (!data.email || !data.password || !data.name) {
             return NextResponse.json(
-                { message: "Nama, email, dan password wajib diisi!" },
+                { message: "Name, email, dan password wajib diisi!" },
                 { status: 400 }
             );
         }
@@ -36,7 +36,7 @@ export async function POST(request) {
         const registerUser = await db.users.create({
             data: {
                 user_id: user_id,
-                nama: data.nama,
+                name: data.name,
                 email: data.email,
                 password: hashedPassword,
                 role: "editor", // Default role

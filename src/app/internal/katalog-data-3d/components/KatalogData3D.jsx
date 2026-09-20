@@ -35,7 +35,7 @@ const PreviewCesiumModal = dynamic(() => import("./PreviewCesiumModal"), { ssr: 
 const PreviewPlyModal = dynamic(() => import("./PreviewPlyModal"), { ssr: false });
 
 const DEFAULT_FORM = {
-  nama: "",
+  model_name: "",
   file: null,
   akses: "public",
   latitude: "",
@@ -46,7 +46,7 @@ const DEFAULT_FORM = {
   scale: 1,
 };
 
-export default function KatalogData3D() {
+export default function KatalogData3D({accessToken}) {
   const [tableData, setTableData] = useState([]);
   const [search, setSearch] = useState("");
   const [filteredData, setFilteredData] = useState([]);
@@ -87,7 +87,7 @@ export default function KatalogData3D() {
     }
     const query = search.toLowerCase();
     const result = (tableData || []).filter((item) =>
-      item.nama?.toLowerCase().includes(query)
+      item.model_name?.toLowerCase().includes(query)
     );
     setFilteredData(result);
   }, [search, tableData]);
@@ -142,7 +142,7 @@ export default function KatalogData3D() {
 
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2, height: "40px" }}>
         <TextField
-          placeholder="Cari nama layer..."
+          placeholder="Cari nama model..."
           size="small"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -186,11 +186,17 @@ export default function KatalogData3D() {
         ) : null}
       </Box>
 
-      <Paper sx={{ borderRadius: 3, overflow: "hidden", border: "1px solid #E5E7EB", boxShadow: "0 1px 3px rgba(16,24,40,0.1)" }}>
+      <Paper
+        sx={{
+          borderRadius: 3,
+          overflow: "hidden",
+          border: (theme) => `1px solid ${theme.palette.divider}`,
+        }}
+      >
         <Table>
           <TableHead>
-            <TableRow sx={{ "& .MuiTableCell-root": { bgcolor: "#1E1E2D", color: "#fff", fontWeight: 600, fontSize: 13, letterSpacing: 0.3 } }}>
-              <TableCell>Nama Layer</TableCell>
+            <TableRow>
+              <TableCell>Nama Model</TableCell>
               <TableCell>URL File</TableCell>
               <TableCell>Koordinat (Lat, Long)</TableCell>
               <TableCell>Pembuat</TableCell>
@@ -203,8 +209,8 @@ export default function KatalogData3D() {
           <TableBody>
             {filteredData?.length > 0 ? (
               filteredData.map((row) => (
-                <TableRow key={row.data_3d_id} hover sx={{ "&:last-child td, &:last-child th": { border: 0 } }}>
-                  <TableCell sx={{ fontWeight: 600, color: "#111827" }}>{row.nama}</TableCell>
+                <TableRow key={row.data_3d_id} hover>
+                  <TableCell sx={{ fontWeight: 600 }}>{row.model_name}</TableCell>
 
                   <TableCell>
                     <Link
@@ -212,8 +218,8 @@ export default function KatalogData3D() {
                       target="_blank"
                       rel="noopener noreferrer"
                       underline="hover"
+                      color="primary"
                       sx={{
-                        color: "#4F46E5",
                         maxWidth: 220,
                         display: "inline-block",
                         overflow: "hidden",
@@ -226,16 +232,17 @@ export default function KatalogData3D() {
                     </Link>
                   </TableCell>
 
-                  <TableCell sx={{ color: "#4B5563", fontSize: 13 }}>
+                  <TableCell sx={{ color: "text.secondary", fontSize: 13 }}>
                     {row.latitude?.toFixed(4)}, {row.longitude?.toFixed(4)}
                   </TableCell>
 
-                  <TableCell sx={{ color: "#374151" }}>{row.users?.email}</TableCell>
-                  <TableCell sx={{ color: "#374151" }}>
+                  <TableCell sx={{ color: "text.secondary" }}>{row.users?.email}</TableCell>
+
+                  <TableCell>
                     <Chip
                       label={(row.tipe_file).toUpperCase()}
                       size="small"
-                      color={row.tipe_file === "glb" ? "success" : "default"}
+                      color={row.tipe_file === "glb" ? "primary" : "default"}
                       variant={row.tipe_file === "glb" ? "filled" : "outlined"}
                       sx={{ fontWeight: 600, fontSize: 11 }}
                     />
@@ -245,7 +252,7 @@ export default function KatalogData3D() {
                     <Chip
                       label={(row.akses).toUpperCase()}
                       size="small"
-                      color={row.akses === "public" ? "success" : "default"}
+                      color={row.akses === "public" ? "primary" : "default"}
                       variant={row.akses === "public" ? "filled" : "outlined"}
                       sx={{ fontWeight: 600, fontSize: 11 }}
                     />
@@ -260,7 +267,7 @@ export default function KatalogData3D() {
                     {session?.data?.user?.role !== "viewer" ? (
                       <>
                         <Tooltip title="Edit Metadata">
-                          <IconButton size="small" color="info" onClick={() => handleOpenEdit(row)}>
+                          <IconButton size="small" color="secondary" onClick={() => handleOpenEdit(row)}>
                             <EditIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
@@ -276,7 +283,7 @@ export default function KatalogData3D() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} align="center" sx={{ py: 6 }}>
+                <TableCell colSpan={7} align="center" sx={{ py: 6 }}>
                   <Typography variant="body1" color="text.secondary">
                     {search ? "Tidak ada data 3D yang sesuai dengan pencarian." : "Belum ada katalog data 3D."}
                   </Typography>

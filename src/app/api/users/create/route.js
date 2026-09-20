@@ -31,9 +31,8 @@ export async function POST(request) {
         const newUser = await db.users.create({
             data: {
                 user_id: crypto.randomUUID(),
-                nama: data.nama,
+                name: data.name,
                 email: data.email,
-                nama: data.nama,
                 password: password,
                 role: data.role,
                 is_active: data.is_active,

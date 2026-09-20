@@ -184,7 +184,7 @@ const UpdateData = ({ item, handleCloseEdit, getData, accessToken }) => {
         >
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, color: "#1E1E2D" }}>
-                    Edit Layer: {item.nama}
+                    Edit Layer: {item.model_name}
                 </Typography>
                 <IconButton onClick={handleCloseEdit} size="small" sx={{ color: "#6B7280" }}>
                     <Close />
@@ -197,7 +197,7 @@ const UpdateData = ({ item, handleCloseEdit, getData, accessToken }) => {
                     <TextField
                         label="Nama Layer"
                         fullWidth
-                        value={item.nama || ""}
+                        value={item.model_name || ""}
                         disabled
                         sx={disabledFieldStyle}
                     />

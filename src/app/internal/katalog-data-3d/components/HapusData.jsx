@@ -90,7 +90,7 @@ const HapusData = ({ item, handleCloseDelete, getData, accessToken }) => {
                 </Typography>
 
                 <Typography variant="body2" sx={{ color: "#6B7280", mb: 3 }}>
-                    Apakah Anda yakin ingin menghapus file <strong>"{item?.nama || "data ini"}"</strong>? Tindakan ini tidak dapat dibatalkan.
+                    Apakah Anda yakin ingin menghapus file <strong>"{item?.model_name || "data ini"}"</strong>? Tindakan ini tidak dapat dibatalkan.
                 </Typography>
 
                 {error && (
