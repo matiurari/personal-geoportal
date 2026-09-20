@@ -1,9 +1,6 @@
 # ---- Stage 1: Install dependencies ----
 FROM node:20-alpine AS deps
 WORKDIR /app
-
-# Copy hanya file dependency dulu supaya layer ini di-cache
-# (tidak perlu install ulang tiap kali ada perubahan kode)
 COPY package.json package-lock.json* ./
 COPY prisma ./prisma/
 RUN npm ci
@@ -14,11 +11,15 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# --- TAMBAHKAN BARIS INI AGAR BUILD-ARG MASUK KE NEXT.JS ---
+ARG NEXT_PUBLIC_CESIUM_ION_TOKEN
+ENV NEXT_PUBLIC_CESIUM_ION_TOKEN=$NEXT_PUBLIC_CESIUM_ION_TOKEN
+
 # Build NextJS untuk production
 ENV NEXT_TELEMETRY_DISABLED 1
 RUN npm run build
 
-# ---- Stage 3: Production image (ringan, tanpa source code & dev dependency) ----
+# ---- Stage 3: Production image ----
 FROM node:20-alpine AS runner
 WORKDIR /app
 
@@ -26,11 +27,9 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV PORT=3000
 
-# Buat user non-root untuk keamanan (jangan jalankan container sebagai root)
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy hasil build standalone (lihat catatan next.config.js di bawah)
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static

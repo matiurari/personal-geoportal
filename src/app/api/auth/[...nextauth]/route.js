@@ -19,7 +19,6 @@ export const authOptions = {
             credentials.password,
           ); //validasi email dan password
           const accessToken = signAccessToken(user);
-          console.log("Di Dalam authorize", user);
           return {
             id: user.user_id,
             user_id: user.user_id,

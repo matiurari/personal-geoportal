@@ -4,6 +4,5 @@ import { authOptions } from "../api/auth/[...nextauth]/route";
 
 export default async function Internal() {
   const session = await getServerSession(authOptions);
-  console.log(session);
   return <Dashboard accessToken={session.accessToken} />;
 }
