@@ -3,6 +3,8 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
+      - '--build-arg'
+      - 'NEXT_PUBLIC_CESIUM_ION_TOKEN=$_CESIUM_TOKEN'
       - '-t'
       - 'asia-southeast2-docker.pkg.dev/project-2cd93730-d9d7-41ee-820/katalog-images/nextjs-app:latest'
       - '.'
@@ -23,7 +25,7 @@ steps:
           --zone=asia-southeast2-b \
           --tunnel-through-iap \
           --quiet \
-          --command="gcloud auth configure-docker asia-southeast2-docker.pkg.dev --quiet && cd /home/matiurari0/app && docker compose pull nextjs && docker compose up -d nextjs"
+          --command="gcloud auth configure-docker asia-southeast2-docker.pkg.dev --quiet && cd /home/matiurari0/app && docker compose pull nextjs && docker compose up -d --force-recreate nextjs"
 
 images:
   - 'asia-southeast2-docker.pkg.dev/project-2cd93730-d9d7-41ee-820/katalog-images/nextjs-app:latest'
