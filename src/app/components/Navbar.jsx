@@ -18,16 +18,19 @@ import ExploreIcon from "@mui/icons-material/Explore";
 import LoginIcon from "@mui/icons-material/Login";
 import MapIcon from "@mui/icons-material/Map";
 import HomeIcon from "@mui/icons-material/Home";
+import { CorporateFare } from "@mui/icons-material";
 
 const ROUTES = {
   home: "/",         
-  peta: "/peta-2d",
+  peta :"/peta-2d",
+  peta3d: "/peta-3d",
   login: "/login",
 };
 
 const menuItems = [
   { label: "Beranda", path: ROUTES.home, exact: true, icon: <HomeIcon fontSize="small" /> },
-  { label: "Peta", path: ROUTES.peta, exact: false, icon: <MapIcon fontSize="small" /> },
+  { label: "Peta 2D", path: ROUTES.peta, exact: false, icon: <MapIcon fontSize="small" /> },
+  {label: "Peta 3D", path: ROUTES.peta3d, exact: false, icon: <CorporateFare fontSize="small" /> }
 ];
 
 export default function Navbar() {

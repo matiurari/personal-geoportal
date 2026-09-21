@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -11,10 +11,10 @@ import {
   ListItem,
   ListItemText,
 } from "@mui/material";
-import { Layers, Delete, Search as SearchIcon } from "@mui/icons-material";
+import { ViewInAr, Search as SearchIcon } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 
-const CATALOG_LAYER = "/portal/api/katalog-data-2d/list-public";
+const CATALOG_3D = "/portal/api/katalog-data-3d/list-public-glb";
 
 const EarthSwitch = styled((props) => (
   <Switch focusVisibleClassName=".Mui-focusVisible" disableRipple {...props} />
@@ -36,11 +36,7 @@ const EarthSwitch = styled((props) => (
       },
     },
   },
-  "& .MuiSwitch-thumb": {
-    boxSizing: "border-box",
-    width: 22,
-    height: 22,
-  },
+  "& .MuiSwitch-thumb": { boxSizing: "border-box", width: 22, height: 22 },
   "& .MuiSwitch-track": {
     borderRadius: 13,
     backgroundColor: "#E4DFCF",
@@ -49,41 +45,24 @@ const EarthSwitch = styled((props) => (
   },
 }));
 
-const formatLayerName = (name) => {
-  if (!name) return "";
-  const withoutWorkspace = name.includes(":") ? name.split(":")[1] : name;
-  return withoutWorkspace
-    .replace(/_[a-f0-9]{8}$/i, "")
-    .split("_")
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join(" ");
-};
-
-export default function CatalogPanel({ open, map, addedLayersRef }) {
-  const leafletRef = useRef(null);
-  const [layers, setLayers] = useState([]);
+export default function CatalogPanel3D({ open, viewer, addedModelsRef }) {
+  const [models, setModels] = useState([]);
   const [search, setSearch] = useState("");
   const [activeIds, setActiveIds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    (async () => {
-      leafletRef.current = (await import("leaflet")).default;
-    })();
-  }, []);
-
-  useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         setError(false);
-        const res = await fetch(CATALOG_LAYER);
-        if (!res.ok) throw new Error("Gagal mengambil data katalog");
+        const res = await fetch(CATALOG_3D);
+        if (!res.ok) throw new Error("Gagal mengambil data katalog 3D");
         const json = await res.json();
-        setLayers(json.data || []);
+        setModels(json.data || []);
       } catch (err) {
-        console.error("Gagal mengambil katalog layer publik:", err);
+        console.error("Gagal mengambil katalog 3D publik:", err);
         setError(true);
       } finally {
         setLoading(false);
@@ -92,31 +71,80 @@ export default function CatalogPanel({ open, map, addedLayersRef }) {
     fetchData();
   }, []);
 
-  const toggleLayer = (item) => {
-    const L = leafletRef.current;
-    if (!L || !map) return;
 
-    const isActive = activeIds.includes(item.data_2d_id);
+  useEffect(() => {
+    return () => {
+      const v = viewer;
+      if (!v || v.isDestroyed()) return;
+      Object.values(addedModelsRef.current).forEach((entity) => {
+        v.entities.remove(entity);
+      });
+      addedModelsRef.current = {};
+    };
+  }, []);
+
+  const toggleModel = (item) => {
+    const Cesium = window.Cesium;
+    if (!Cesium || !viewer || viewer.isDestroyed()) return;
+
+    const id = item.data_3d_id;
+    const isActive = activeIds.includes(id);
 
     if (isActive) {
-      const existing = addedLayersRef.current[item.data_2d_id];
+      const existing = addedModelsRef.current[id];
       if (existing) {
-        map.removeLayer(existing);
-        delete addedLayersRef.current[item.data_2d_id];
+        viewer.entities.remove(existing);
+        delete addedModelsRef.current[id];
       }
-      setActiveIds((prev) => prev.filter((id) => id !== item.data_2d_id));
-    } else {
-      const wmsLayer = L.tileLayer.wms(item.wms_url, {
-        layers: item.layer_name,
-        format: "image/png",
-        transparent: true,
-        version: "1.1.0",
-      });
-      wmsLayer.addTo(map);
-      addedLayersRef.current[item.data_2d_id] = wmsLayer;
-      setActiveIds((prev) => [...prev, item.data_2d_id]);
+      setActiveIds((prev) => prev.filter((x) => x !== id));
+      return;
     }
+
+    const lat = Number(item.latitude);
+    const lon = Number(item.longitude);
+    if (Number.isNaN(lat) || Number.isNaN(lon)) {
+      console.error("Koordinat model tidak valid:", item);
+      return;
+    }
+
+    const position = Cesium.Cartesian3.fromDegrees(lon, lat, 0);
+    const hpr = new Cesium.HeadingPitchRoll(
+      Cesium.Math.toRadians(Number(item.heading) || 0),
+      Cesium.Math.toRadians(Number(item.pitch) || 0),
+      Cesium.Math.toRadians(Number(item.roll) || 0)
+    );
+    const orientation = Cesium.Transforms.headingPitchRollQuaternion(
+      position,
+      hpr
+    );
+
+    const entity = viewer.entities.add({
+      name: item.model_name,
+      position,
+      orientation,
+      model: {
+        uri: item.url,
+        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+        shadows: Cesium.ShadowMode.ENABLED,
+      },
+    });
+
+    addedModelsRef.current[id] = entity;
+    setActiveIds((prev) => [...prev, id]);
+
+    viewer.flyTo(entity, {
+      duration: 1.5,
+      offset: new Cesium.HeadingPitchRange(
+        Cesium.Math.toRadians(Number(item.heading) || 0),
+        Cesium.Math.toRadians(-30),
+        150
+      ),
+    });
   };
+
+  const filteredModels = models.filter((item) =>
+    (item.model_name || "").toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <Box
@@ -137,7 +165,7 @@ export default function CatalogPanel({ open, map, addedLayersRef }) {
         transition: "all 0.3s ease",
         boxShadow: open ? "0 4px 20px rgba(0,0,0,0.2)" : "none",
       }}
-      id="isi-katalog-layer-public"
+      id="isi-katalog-layer-3d-public"
     >
       {open && (
         <>
@@ -164,9 +192,9 @@ export default function CatalogPanel({ open, map, addedLayersRef }) {
                 textTransform: "capitalize",
                 "&:hover": { backgroundColor: "#16332B" },
               }}
-              endIcon={<Layers />}
+              endIcon={<ViewInAr />}
             >
-              Katalog Layer
+              Katalog Model 3D
             </Button>
           </Box>
 
@@ -223,9 +251,7 @@ export default function CatalogPanel({ open, map, addedLayersRef }) {
                   background: "#0F2A24",
                   borderRadius: "5px",
                 },
-                "::-webkit-scrollbar-thumb:hover": {
-                  background: "#16332B",
-                },
+                "::-webkit-scrollbar-thumb:hover": { background: "#16332B" },
               }}
             >
               {loading ? (
@@ -240,32 +266,31 @@ export default function CatalogPanel({ open, map, addedLayersRef }) {
                 >
                   Gagal memuat data. Silakan coba lagi nanti.
                 </Typography>
-              ) : filteredLayers.length === 0 ? (
+              ) : filteredModels.length === 0 ? (
                 <Typography
                   sx={{ textAlign: "center", py: 3, fontSize: 13, color: "#0F2A24" }}
                 >
-                  Tidak ada layer ditemukan
+                  Tidak ada model ditemukan
                 </Typography>
               ) : (
-                filteredLayers.map((item) => (
+                filteredModels.map((item) => (
                   <ListItem
-                    key={item.data_2d_id}
+                    key={item.data_3d_id}
                     secondaryAction={
                       <EarthSwitch
-                        checked={activeIds.includes(item.data_2d_id)}
-                        onChange={() => toggleLayer(item)}
+                        checked={activeIds.includes(item.data_3d_id)}
+                        onChange={() => toggleModel(item)}
                       />
                     }
                     sx={{ borderBottom: "1px solid #E4DFCF" }}
                   >
-                   
-                <ListItemText
-                    primary={formatLayerName(item.layer_name)}
-                    slotProps={{
+                    <ListItemText
+                      primary={item.model_name}
+                      slotProps={{
                         primary: {
-                        sx: { fontSize: 13.5, fontWeight: 500, color: "#000000" },
+                          sx: { fontSize: 13.5, fontWeight: 500, color: "#000000" },
                         },
-                    }}
+                      }}
                     />
                   </ListItem>
                 ))
