@@ -118,6 +118,12 @@ export default function CatalogPanel({ open, map, addedLayersRef }) {
     }
   };
 
+  const filteredLayers = layers.filter((item) =>
+  formatLayerName(item.layer_name)
+    .toLowerCase()
+    .includes(search.trim().toLowerCase())
+);
+
   return (
     <Box
       sx={{
