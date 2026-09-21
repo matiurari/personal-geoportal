@@ -19,10 +19,9 @@ import LoginIcon from "@mui/icons-material/Login";
 import MapIcon from "@mui/icons-material/Map";
 import HomeIcon from "@mui/icons-material/Home";
 
-// Semua path dipusatkan di sini supaya mudah diubah
 const ROUTES = {
-  home: "/portal",          // ganti ke "/" jika Beranda ada di root
-  peta: "/portal/peta-2d",
+  home: "/",         
+  peta: "/peta-2d",
   login: "/login",
 };
 
