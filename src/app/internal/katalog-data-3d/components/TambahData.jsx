@@ -1,13 +1,13 @@
 "use client";
 
-import { Box, Button, IconButton, MenuItem, TextField, Typography } from "@mui/material";
+import { Box, Button, IconButton, MenuItem, TextField, Typography, List, ListItemButton, ListItemText, CircularProgress, InputAdornment } from "@mui/material";
 import UploadIcon from "@mui/icons-material/Upload";
+import SearchIcon from "@mui/icons-material/Search";
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Close } from "@mui/icons-material";
 
-// Style dasar dipakai untuk semua TextField agar konsisten dengan TambahData
 const textFieldStyle = {
     "& .MuiInputBase-input": { color: "#1F2937" },
     "& .MuiInputLabel-root": { color: "#6B7280" },
@@ -24,6 +24,12 @@ const TambahData = ({ form, setForm, handleCloseAdd, getData, accessToken }) => 
     const mapInstanceRef = useRef(null);
     const markerRef = useRef(null);
     const [centerPoint, setCenterPoint] = useState([-6.2088, 106.8456]);
+
+    const [searchQuery, setSearchQuery] = useState("");
+    const [searchResults, setSearchResults] = useState([]);
+    const [searching, setSearching] = useState(false);
+    const [showResults, setShowResults] = useState(false);
+    const debounceRef = useRef(null);
 
     useEffect(() => {
         if (!mapRef.current || mapInstanceRef.current) return;
@@ -47,28 +53,13 @@ const TambahData = ({ form, setForm, handleCloseAdd, getData, accessToken }) => 
 
         markerRef.current = L.marker(centerPoint).addTo(map);
 
-        // Menyesuaikan ukuran peta saat berada di dalam Modal MUI
         setTimeout(() => {
             map.invalidateSize();
         }, 200);
 
         map.on("click", (e) => {
             const { lat, lng } = e.latlng;
-            if (markerRef.current) {
-                markerRef.current.setLatLng([lat, lng]);
-            } else {
-                markerRef.current = L.marker([lat, lng]).addTo(map);
-            }
-
-            setCenterPoint([lat, lng]);
-
-            if (setForm) {
-                setForm((prev) => ({
-                    ...prev,
-                    latitude: lat,
-                    longitude: lng,
-                }));
-            }
+            pindahkanMarker(lat, lng);
         });
 
         return () => {
@@ -79,6 +70,64 @@ const TambahData = ({ form, setForm, handleCloseAdd, getData, accessToken }) => 
             }
         };
     }, []);
+
+    const pindahkanMarker = (lat, lng, zoom) => {
+        if (markerRef.current) {
+            markerRef.current.setLatLng([lat, lng]);
+        } else if (mapInstanceRef.current) {
+            markerRef.current = L.marker([lat, lng]).addTo(mapInstanceRef.current);
+        }
+
+        if (mapInstanceRef.current) {
+            mapInstanceRef.current.setView([lat, lng], zoom || mapInstanceRef.current.getZoom());
+        }
+
+        setCenterPoint([lat, lng]);
+
+        if (setForm) {
+            setForm((prev) => ({
+                ...prev,
+                latitude: lat,
+                longitude: lng,
+            }));
+        }
+    };
+
+    useEffect(() => {
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+
+        if (!searchQuery || searchQuery.trim().length < 3) {
+            setSearchResults([]);
+            return;
+        }
+
+        debounceRef.current = setTimeout(async () => {
+            try {
+                setSearching(true);
+                const res = await fetch(
+                    `https://nominatim.openstreetmap.org/search?format=json&limit=5&countrycodes=id&q=${encodeURIComponent(searchQuery)}`
+                );
+                const data = await res.json();
+                setSearchResults(data || []);
+                setShowResults(true);
+            } catch (err) {
+                console.error("Gagal mencari lokasi:", err);
+                setSearchResults([]);
+            } finally {
+                setSearching(false);
+            }
+        }, 400);
+
+        return () => clearTimeout(debounceRef.current);
+    }, [searchQuery]);
+
+    const handleSelectResult = (result) => {
+        const lat = parseFloat(result.lat);
+        const lon = parseFloat(result.lon);
+        pindahkanMarker(lat, lon, 16);
+        setSearchQuery(result.display_name);
+        setShowResults(false);
+    };
 
     const handleSubmitData = async () => {
         try {
@@ -113,8 +162,8 @@ const TambahData = ({ form, setForm, handleCloseAdd, getData, accessToken }) => 
             }
 
             alert("Berhasil menambah data 3D!");
-            handleCloseAdd(); // tutup modal
-            getData(); // refresh table katalog
+            handleCloseAdd();
+            getData();
         } catch (err) {
             alert(err.message);
         }
@@ -143,41 +192,19 @@ const TambahData = ({ form, setForm, handleCloseAdd, getData, accessToken }) => 
                 <IconButton onClick={handleCloseAdd} size="small" sx={{ color: "#6B7280" }}>
                     <Close />
                 </IconButton>
-            </Box><Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 2, mt: 1 }}>
-                <Box
-                    sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 2.5,
-                        mt: 1,
-                        flex: 1,
-                    }}
-                >
-                    {/* Nama Layer */}
+            </Box>
+            <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 2, mt: 1 }}>
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5, mt: 1, flex: 1 }}>
                     <TextField
                         label="Nama Layer"
                         fullWidth
                         value={form?.model_name || ""}
                         onChange={(e) =>
-                            setForm &&
-                            setForm((f) => ({
-                                ...f,
-                                model_name: e.target.value,
-                            }))
+                            setForm && setForm((f) => ({ ...f, model_name: e.target.value }))
                         }
-                        sx={{
-                            "& .MuiInputBase-input": { color: "#1F2937" },
-                            "& .MuiInputLabel-root": { color: "#6B7280" },
-                            "& .MuiInputLabel-root.Mui-focused": { color: "#1976D2" },
-                            "& .MuiOutlinedInput-root": {
-                                "& fieldset": { borderColor: "#BFC5CC" },
-                                "&:hover fieldset": { borderColor: "#1976D2" },
-                                "&.Mui-focused fieldset": { borderColor: "#1976D2" },
-                            },
-                        }}
+                        sx={textFieldStyle}
                     />
 
-                    {/* Upload File */}
                     <Button
                         component="label"
                         variant="outlined"
@@ -189,77 +216,41 @@ const TambahData = ({ form, setForm, handleCloseAdd, getData, accessToken }) => 
                             borderRadius: 2,
                             color: "#4B5563",
                             borderColor: "#AFC8B8",
-                            "&:hover": {
-                                borderColor: "#388E3C",
-                                backgroundColor: "#F5FAF6",
-                            },
+                            "&:hover": { borderColor: "#388E3C", backgroundColor: "#F5FAF6" },
                         }}
                     >
-                        <Typography
-                            noWrap
-                            sx={{ fontSize: 14, maxWidth: "220px", textOverflow: "ellipsis" }}
-                        >
+                        <Typography noWrap sx={{ fontSize: 14, maxWidth: "220px", textOverflow: "ellipsis" }}>
                             {form?.file ? form.file.name : "Pilih File 3D (.glb, .ply)"}
                         </Typography>
-
                         <input
                             type="file"
                             accept=".glb,.ply"
                             hidden
                             onChange={(e) =>
-                                setForm &&
-                                setForm((f) => ({
-                                    ...f,
-                                    file: e.target.files?.[0] || null,
-                                }))
+                                setForm && setForm((f) => ({ ...f, file: e.target.files?.[0] || null }))
                             }
                         />
                     </Button>
 
-                    {/* Hak Akses */}
                     <TextField
                         select
                         label="Akses"
                         fullWidth
                         value={form?.akses || "public"}
-                        onChange={(e) =>
-                            setForm &&
-                            setForm((f) => ({
-                                ...f,
-                                akses: e.target.value,
-                            }))
-                        }
-                        sx={{
-                            "& .MuiInputBase-input": { color: "#1F2937" },
-                            "& .MuiSelect-select": { color: "#1F2937" },
-                            "& .MuiInputLabel-root": { color: "#6B7280" },
-                            "& .MuiInputLabel-root.Mui-focused": { color: "#1976D2" },
-                            "& .MuiOutlinedInput-notchedOutline": { borderColor: "#BFC5CC" },
-                            "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#1976D2" },
-                            "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                                borderColor: "#1976D2",
-                            },
-                            "& .MuiSelect-icon": { color: "#6B7280" },
-                        }}
+                        onChange={(e) => setForm && setForm((f) => ({ ...f, akses: e.target.value }))}
+                        sx={textFieldStyle}
                     >
                         <MenuItem value="public">Public</MenuItem>
                         <MenuItem value="private">Private</MenuItem>
                     </TextField>
 
-                    {/* Orientasi: Heading, Pitch, Roll */}
                     <Box sx={{ display: "flex", gap: 1.5 }}>
                         <TextField
                             label="Heading"
                             type="number"
                             fullWidth
                             value={form?.heading ?? 0}
-                            onChange={(e) =>
-                                setForm &&
-                                setForm((f) => ({
-                                    ...f,
-                                    heading: e.target.value,
-                                }))
-                            }
+                            onChange={(e) => setForm && setForm((f) => ({ ...f, heading: e.target.value }))}
                             inputprops={{ step: "1" }}
                             sx={textFieldStyle}
                         />
@@ -268,13 +259,7 @@ const TambahData = ({ form, setForm, handleCloseAdd, getData, accessToken }) => 
                             type="number"
                             fullWidth
                             value={form?.pitch ?? 0}
-                            onChange={(e) =>
-                                setForm &&
-                                setForm((f) => ({
-                                    ...f,
-                                    pitch: e.target.value,
-                                }))
-                            }
+                            onChange={(e) => setForm && setForm((f) => ({ ...f, pitch: e.target.value }))}
                             inputprops={{ step: "1" }}
                             sx={textFieldStyle}
                         />
@@ -283,53 +268,23 @@ const TambahData = ({ form, setForm, handleCloseAdd, getData, accessToken }) => 
                             type="number"
                             fullWidth
                             value={form?.roll ?? 0}
-                            onChange={(e) =>
-                                setForm &&
-                                setForm((f) => ({
-                                    ...f,
-                                    roll: e.target.value,
-                                }))
-                            }
+                            onChange={(e) => setForm && setForm((f) => ({ ...f, roll: e.target.value }))}
                             inputprops={{ step: "1" }}
                             sx={textFieldStyle}
                         />
                     </Box>
 
-                    {/* Scale */}
                     <TextField
                         label="Scale"
                         type="number"
                         fullWidth
                         value={form?.scale ?? 1}
-                        onChange={(e) =>
-                            setForm &&
-                            setForm((f) => ({
-                                ...f,
-                                scale: e.target.value,
-                            }))
-                        }
+                        onChange={(e) => setForm && setForm((f) => ({ ...f, scale: e.target.value }))}
                         inputprops={{ step: "0.1", min: "0" }}
-                        sx={{
-                            "& .MuiInputBase-input": { color: "#1F2937" },
-                            "& .MuiInputLabel-root": { color: "#6B7280" },
-                            "& .MuiInputLabel-root.Mui-focused": { color: "#1976D2" },
-                            "& .MuiOutlinedInput-root": {
-                                "& fieldset": { borderColor: "#BFC5CC" },
-                                "&:hover fieldset": { borderColor: "#1976D2" },
-                                "&.Mui-focused fieldset": { borderColor: "#1976D2" },
-                            },
-                        }}
+                        sx={textFieldStyle}
                     />
 
-                    {/* Tombol Aksi */}
-                    <Box
-                        sx={{
-                            display: "flex",
-                            flexDirection: "row",
-                            justifyContent: "flex-end",
-                            gap: "10px",
-                        }}
-                    >
+                    <Box sx={{ display: "flex", flexDirection: "row", justifyContent: "flex-end", gap: "10px" }}>
                         <Button
                             variant="contained"
                             color="warning"
@@ -338,7 +293,6 @@ const TambahData = ({ form, setForm, handleCloseAdd, getData, accessToken }) => 
                         >
                             Batalkan
                         </Button>
-
                         <Button
                             variant="contained"
                             color="info"
@@ -350,18 +304,67 @@ const TambahData = ({ form, setForm, handleCloseAdd, getData, accessToken }) => 
                     </Box>
                 </Box>
 
-                {/* Peta Pemilihan Lokasi */}
-                <Box
-                    sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 1,
-                        alignItems: "center",
-                    }}
-                >
+                {/* Peta Pemilihan Lokasi + Pencarian */}
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 1, alignItems: "center", width: { xs: "100%", md: "300px" } }}>
+                    <Box sx={{ position: "relative", width: "100%" }}>
+                        <TextField
+                            placeholder="Cari lokasi... (mis. Monas Jakarta)"
+                            fullWidth
+                            size="small"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onFocus={() => searchResults.length > 0 && setShowResults(true)}
+                            sx={textFieldStyle}
+                            slotProps={{
+                                input: {
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <SearchIcon fontSize="small" sx={{ color: "#6B7280" }} />
+                                        </InputAdornment>
+                                    ),
+                                    endAdornment: searching ? (
+                                        <InputAdornment position="end">
+                                            <CircularProgress size={16} />
+                                        </InputAdornment>
+                                    ) : null,
+                                },
+                            }}
+                        />
+
+                        {showResults && searchResults.length > 0 && (
+                            <Box
+                                sx={{
+                                    position: "absolute",
+                                    top: "100%",
+                                    left: 0,
+                                    right: 0,
+                                    zIndex: 2000,
+                                    bgcolor: "#fff",
+                                    borderRadius: 1,
+                                    boxShadow: 4,
+                                    mt: 0.5,
+                                    maxHeight: 180,
+                                    overflowY: "auto",
+                                    border: "1px solid #E5E7EB",
+                                }}
+                            >
+                                <List dense disablePadding>
+                                    {searchResults.map((r) => (
+                                        <ListItemButton key={r.place_id} onClick={() => handleSelectResult(r)}>
+                                            <ListItemText
+                                                primary={r.display_name}
+                                                primaryTypographyProps={{ fontSize: 12.5, color: "#1F2937" }}
+                                            />
+                                        </ListItemButton>
+                                    ))}
+                                </List>
+                            </Box>
+                        )}
+                    </Box>
+
                     <Box
                         sx={{
-                            width: { xs: "100%", md: "300px" },
+                            width: "100%",
                             height: "250px",
                             borderRadius: 2,
                             overflow: "hidden",
