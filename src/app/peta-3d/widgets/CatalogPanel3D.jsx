@@ -10,11 +10,9 @@ import {
   List,
   ListItem,
   ListItemText,
-  CircularProgress,
 } from "@mui/material";
 import { ViewInAr, Search as SearchIcon } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
-import { loadGlbTerkoreksi } from "../utils/loadGlbTerkoreksi";
 
 const CATALOG_3D = "/portal/api/katalog-data-3d/list-public-glb";
 
@@ -51,7 +49,6 @@ export default function CatalogPanel3D({ open, viewer, addedModelsRef }) {
   const [models, setModels] = useState([]);
   const [search, setSearch] = useState("");
   const [activeIds, setActiveIds] = useState([]);
-  const [loadingIds, setLoadingIds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -74,33 +71,29 @@ export default function CatalogPanel3D({ open, viewer, addedModelsRef }) {
     fetchData();
   }, []);
 
+
   useEffect(() => {
     return () => {
       const v = viewer;
       if (!v || v.isDestroyed()) return;
-      // Model sekarang disimpan sebagai primitive (Cesium.Model), bukan entity,
-      // jadi cara hapusnya lewat scene.primitives, bukan viewer.entities
-      Object.values(addedModelsRef.current).forEach((model) => {
-        v.scene.primitives.remove(model);
+      Object.values(addedModelsRef.current).forEach((entity) => {
+        v.entities.remove(entity);
       });
       addedModelsRef.current = {};
     };
   }, []);
 
-  const toggleModel = async (item) => {
+  const toggleModel = (item) => {
     const Cesium = window.Cesium;
     if (!Cesium || !viewer || viewer.isDestroyed()) return;
 
     const id = item.data_3d_id;
     const isActive = activeIds.includes(id);
 
-    // Cegah klik dobel selagi model masih dalam proses dimuat (async)
-    if (loadingIds.includes(id)) return;
-
     if (isActive) {
       const existing = addedModelsRef.current[id];
       if (existing) {
-        viewer.scene.primitives.remove(existing);
+        viewer.entities.remove(existing);
         delete addedModelsRef.current[id];
       }
       setActiveIds((prev) => prev.filter((x) => x !== id));
@@ -114,38 +107,39 @@ export default function CatalogPanel3D({ open, viewer, addedModelsRef }) {
       return;
     }
 
-    setLoadingIds((prev) => [...prev, id]);
+    const position = Cesium.Cartesian3.fromDegrees(lon, lat, 0);
+    const hpr = new Cesium.HeadingPitchRoll(
+      Cesium.Math.toRadians(Number(item.heading) || 0),
+      Cesium.Math.toRadians(Number(item.pitch) || 0),
+      Cesium.Math.toRadians(Number(item.roll) || 0)
+    );
+    const orientation = Cesium.Transforms.headingPitchRollQuaternion(
+      position,
+      hpr
+    );
 
-    try {
-      const model = await loadGlbTerkoreksi({
-        viewer,
-        url: item.url,
-        latitude: lat,
-        longitude: lon,
-        headingDeg: Number(item.heading) || 0,
-        pitchDeg: Number(item.pitch) || 0,
-        rollDeg: Number(item.roll) || 0,
-        scale: Number(item.scale) || 1,
-      });
+    const entity = viewer.entities.add({
+      name: item.model_name,
+      position,
+      orientation,
+      model: {
+        uri: item.url,
+        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+        shadows: Cesium.ShadowMode.ENABLED,
+      },
+    });
 
-      if (!viewer || viewer.isDestroyed()) return;
+    addedModelsRef.current[id] = entity;
+    setActiveIds((prev) => [...prev, id]);
 
-      addedModelsRef.current[id] = model;
-      setActiveIds((prev) => [...prev, id]);
-
-      viewer.flyTo(model, {
-        duration: 1.5,
-        offset: new Cesium.HeadingPitchRange(
-          Cesium.Math.toRadians(Number(item.heading) || 0),
-          Cesium.Math.toRadians(-30),
-          150
-        ),
-      });
-    } catch (err) {
-      console.error(`Gagal memuat model "${item.model_name}":`, err);
-    } finally {
-      setLoadingIds((prev) => prev.filter((x) => x !== id));
-    }
+    viewer.flyTo(entity, {
+      duration: 1.5,
+      offset: new Cesium.HeadingPitchRange(
+        Cesium.Math.toRadians(Number(item.heading) || 0),
+        Cesium.Math.toRadians(-30),
+        150
+      ),
+    });
   };
 
   const filteredModels = models.filter((item) =>
@@ -283,14 +277,10 @@ export default function CatalogPanel3D({ open, viewer, addedModelsRef }) {
                   <ListItem
                     key={item.data_3d_id}
                     secondaryAction={
-                      loadingIds.includes(item.data_3d_id) ? (
-                        <CircularProgress size={20} sx={{ color: "#0F2A24", mr: 1 }} />
-                      ) : (
-                        <EarthSwitch
-                          checked={activeIds.includes(item.data_3d_id)}
-                          onChange={() => toggleModel(item)}
-                        />
-                      )
+                      <EarthSwitch
+                        checked={activeIds.includes(item.data_3d_id)}
+                        onChange={() => toggleModel(item)}
+                      />
                     }
                     sx={{ borderBottom: "1px solid #E4DFCF" }}
                   >
