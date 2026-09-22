@@ -12,6 +12,7 @@ const BASEMAPS = {
         url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
         subdomains: ["a", "b", "c"],
         credit: "© OpenStreetMap contributors",
+        maximumLevel: 15, 
       }),
   },
   satelit: {
@@ -20,6 +21,7 @@ const BASEMAPS = {
       new Cesium.UrlTemplateImageryProvider({
         url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         credit: "© Esri",
+        maximumLevel: 15, 
       }),
   },
 };
