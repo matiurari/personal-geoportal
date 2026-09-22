@@ -5,8 +5,15 @@ import { Box, Paper, IconButton, Tooltip, Fade, Typography } from "@mui/material
 import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 
 
-function buildLegendUrl(wms_url, layer_name) {
-  if (!wms_url || !layer_name) return null;
+const GEOSERVER_HOST = "https://matiur-geoportal.com";
+
+function buildLegendUrl(layer_name) {
+  if (!layer_name || !GEOSERVER_HOST) return null;
+
+  const colonIdx = layer_name.indexOf(":");
+  const workspace = colonIdx > -1 ? layer_name.slice(0, colonIdx) : "geoportal";
+  const wmsEndpoint = `${GEOSERVER_HOST}/geoserver/${workspace}/wms`;
+
   const params = new URLSearchParams({
     service: "WMS",
     version: "1.1.0",
@@ -15,12 +22,12 @@ function buildLegendUrl(wms_url, layer_name) {
     layer: layer_name,
     LEGEND_OPTIONS: "fontAntiAliasing:true;fontSize:11;forceLabels:on",
   });
-  const separator = wms_url.includes("?") ? "&" : "?";
-  return `${wms_url}${separator}${params.toString()}`;
+  return `${wmsEndpoint}?${params.toString()}`;
 }
 
 export default function Legend({ activeLayers = [], dropdownSide = "right" }) {
   const [legendOpen, setLegendOpen] = useState(false);
+  const [failedIds, setFailedIds] = useState({});
 
   const legendItems = useMemo(
     () =>
@@ -28,7 +35,7 @@ export default function Legend({ activeLayers = [], dropdownSide = "right" }) {
         .map((item) => ({
           id: item.id,
           label: item.label,
-          url: buildLegendUrl(item.wms_url, item.layer_name),
+          url: buildLegendUrl(item.layer_name),
         }))
         .filter((item) => item.url),
     [activeLayers]
@@ -128,21 +135,35 @@ export default function Legend({ activeLayers = [], dropdownSide = "right" }) {
                   >
                     {item.label}
                   </Typography>
-                  <Box
-                    component="img"
-                    src={item.url}
-                    alt={item.label}
-                    sx={{
-                      maxWidth: "100%",
-                      display: "block",
-                      bgcolor: "white",
-                      borderRadius: 1,
-                      border: "1px solid #E4DFCF",
-                    }}
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                    }}
-                  />
+
+                  {failedIds[item.id] ? (
+                    <Typography
+                      sx={{
+                        fontSize: 11,
+                        color: "#B3261E",
+                        fontStyle: "italic",
+                      }}
+                    >
+                      Legenda gagal dimuat untuk layer ini.
+                    </Typography>
+                  ) : (
+                    <Box
+                      component="img"
+                      src={item.url}
+                      alt={item.label}
+                      sx={{
+                        maxWidth: "100%",
+                        display: "block",
+                        bgcolor: "white",
+                        borderRadius: 1,
+                        border: "1px solid #E4DFCF",
+                      }}
+                      onError={() => {
+                        console.error("Legend: gagal memuat GetLegendGraphic:", item.url);
+                        setFailedIds((prev) => ({ ...prev, [item.id]: true }));
+                      }}
+                    />
+                  )}
                 </Box>
               ))
             )}
