@@ -46,30 +46,30 @@ export default function PopUp({ L, map, addedLayersRef, clickLatLng, setClickLat
     };
   }, [clickLatLng]);
 
-  // --- Query GetFeatureInfo ke semua layer WMS yang aktif/visible ---
+   
   const queryWmsLayers = async (latlng, map, L, addedLayersRef) => {
-    const entries = Object.values(addedLayersRef.current || {}).filter(
-      (entry) => entry?.layer && entry.type === "wms" && map.hasLayer(entry.layer)
-    );
+    const wmsLayers = Object.entries(addedLayersRef.current || {})
+      .map(([id, layer]) => ({ id, layer }))
+      .filter(({ layer }) => layer && map.hasLayer(layer) && layer.wmsParams);
 
-    if (entries.length === 0) return [];
+    if (wmsLayers.length === 0) return [];
 
     const size = map.getSize();
     const point = map.latLngToContainerPoint(latlng, map.getZoom());
     const bounds = map.getBounds();
     const bbox = `${bounds.getWest()},${bounds.getSouth()},${bounds.getEast()},${bounds.getNorth()}`;
 
-    const requests = entries.map(async (entry) => {
+    const requests = wmsLayers.map(async ({ id, layer }) => {
       try {
-        // --- sesuaikan bagian ini dengan struktur asli Katalog.jsx Reza ---
-        const baseUrl = entry.url; // contoh: "https://geoserver.jakartasatu.../geoserver/wms"
-        const layerName = entry.layerName || entry.name; // contoh: "jaksatu:jalan"
+        const baseUrl = layer._url; 
+        const layerName = layer.wmsParams?.layers; 
+        const version = layer.wmsParams?.version || "1.1.0";
 
         if (!baseUrl || !layerName) return [];
 
         const params = new URLSearchParams({
           SERVICE: "WMS",
-          VERSION: "1.1.1",
+          VERSION: version,
           REQUEST: "GetFeatureInfo",
           LAYERS: layerName,
           QUERY_LAYERS: layerName,
@@ -80,7 +80,8 @@ export default function PopUp({ L, map, addedLayersRef, clickLatLng, setClickLat
           WIDTH: String(size.x),
           FORMAT: "image/png",
           INFO_FORMAT: "application/json",
-          SRS: "EPSG:4326",
+          SRS: version === "1.3.0" ? "EPSG:4326" : "EPSG:4326",
+          CRS: "EPSG:4326",
           X: String(Math.round(point.x)),
           Y: String(Math.round(point.y)),
         });
@@ -92,16 +93,26 @@ export default function PopUp({ L, map, addedLayersRef, clickLatLng, setClickLat
 
         return (data.features || []).map((f) => ({
           attributes: f.properties || {},
-          layerTitle: entry.title || layerName,
+          layerTitle: formatLayerTitle(layerName),
         }));
       } catch (err) {
-        console.error(`Error GetFeatureInfo untuk layer ${entry.title}:`, err);
+        console.error(`Error GetFeatureInfo untuk layer id=${id}:`, err);
         return [];
       }
     });
 
     const resultsPerLayer = await Promise.all(requests);
     return resultsPerLayer.flat();
+  };
+
+  const formatLayerTitle = (name) => {
+    if (!name) return "Layer";
+    const withoutWorkspace = name.includes(":") ? name.split(":")[1] : name;
+    return withoutWorkspace
+      .replace(/_[a-f0-9]{8}$/i, "")
+      .split("_")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
   };
 
   const handleClose = () => {
