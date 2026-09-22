@@ -10,6 +10,7 @@ import FullScreen from '../widgets/FullScreen';
 import Search from '../widgets/Search';
 import Bahasa from '../widgets/Bahasa';
 import Katalog3D from '../widgets/Katalog3D';
+import Zoom from '../widgets/Zoom';
 
 
 const CESIUM_VERSION = '1.120';
@@ -173,12 +174,17 @@ export default function CesiumViewer() {
               <Search viewer={viewer} markerRef={markerRef} />
             </Box>
           </Box>
+
           <Box
             sx={{
               position: 'absolute',
-              bottom: { xs: 24, md:100 },
-              right: { xs: 24,md: 20 },
+              bottom: { xs: 24, md: 20 },
+              right: { xs: 24, md: 20 },
               zIndex: 1000,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+              alignItems: 'flex-end',
             }}
           >
             <Basemap
@@ -186,6 +192,7 @@ export default function CesiumViewer() {
               activeBasemap={activeBasemap}
               onChangeBasemap={setActiveBasemap}
             />
+            <Zoom viewer={viewer} buttonSize={40} />
           </Box>
         </>
       )}

@@ -21,7 +21,12 @@ const tooltipSlotProps = {
   arrow: { sx: { color: "#0F2A24" } },
 };
 
-export default function Katalog({ map, addedLayersRef, buttonSize = 48 }) {
+export default function Katalog({
+  map,
+  addedLayersRef,
+  buttonSize = 48,
+  onActiveLayersChange,
+}) {
   const [open, setOpen] = useState(false);
   const [tooltipOpen, setTooltipOpen] = useState(false);
 
@@ -75,7 +80,12 @@ export default function Katalog({ map, addedLayersRef, buttonSize = 48 }) {
         </Box>
       </Tooltip>
 
-      <CatalogPanel open={open} map={map} addedLayersRef={addedLayersRef} />
+      <CatalogPanel
+        open={open}
+        map={map}
+        addedLayersRef={addedLayersRef}
+        onActiveLayersChange={onActiveLayersChange}
+      />
     </Box>
   );
 }
