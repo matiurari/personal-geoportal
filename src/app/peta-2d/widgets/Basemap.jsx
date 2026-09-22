@@ -1,40 +1,59 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Box, Paper, IconButton, Tooltip, Fade } from "@mui/material";
 import LayersIcon from "@mui/icons-material/Layers";
 
 const BASEMAPS = {
   satelit: {
     label: "Citra Satelit",
-    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    attribution: "Tiles &copy; Esri",
+    create: (Cesium) =>
+      new Cesium.ArcGisMapServerImageryProvider({
+        url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer",
+      }),
   },
   jalan: {
     label: "Peta Jalan (OSM)",
-    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    attribution: "&copy; OpenStreetMap contributors",
+    create: (Cesium) =>
+      new Cesium.UrlTemplateImageryProvider({
+        url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        subdomains: ["a", "b", "c"],
+        credit: "© OpenStreetMap contributors",
+        maximumLevel: 19, 
+      }),
   },
 };
 
-export default function Basemap({ L, map, tileLayerRef, activeBasemap, onChangeBasemap }) {
+export default function Basemap({ viewer, activeBasemap, onChangeBasemap }) {
   const [basemapOpen, setBasemapOpen] = useState(false);
+
+  useEffect(() => {
+    if (!viewer || viewer.isDestroyed()) return;
+    if (viewer.imageryLayers.length > 0) return; 
+
+    const Cesium = window.Cesium;
+    const provider = BASEMAPS[activeBasemap]?.create(Cesium);
+    if (provider) {
+      viewer.imageryLayers.addImageryProvider(provider);
+    }
+  }, [viewer]);
 
   const handleChangeBasemap = useCallback(
     (key) => {
-      if (!L || !map) return;
-      if (tileLayerRef.current) {
-        map.removeLayer(tileLayerRef.current);
+      if (!viewer || viewer.isDestroyed()) return;
+      const Cesium = window.Cesium;
+
+      viewer.imageryLayers.removeAll(true);
+
+      const provider = BASEMAPS[key]?.create(Cesium);
+      if (provider) {
+        viewer.imageryLayers.addImageryProvider(provider);
       }
-      const basemap = BASEMAPS[key];
-      tileLayerRef.current = L.tileLayer(basemap.url, {
-        attribution: basemap.attribution,
-        maxZoom: 19,
-      }).addTo(map);
+
       onChangeBasemap(key);
       setBasemapOpen(false);
     },
-    [L, map, tileLayerRef, onChangeBasemap]
+    [viewer, onChangeBasemap]
   );
 
   return (

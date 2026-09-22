@@ -102,6 +102,7 @@ export default function PreviewCesiumModal({ openPreview, item, handleClosePrevi
                     url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
                     subdomains: ["a", "b", "c"],
                     credit: "© OpenStreetMap contributors",
+                    maximumLevel: 19, // OSM tile server tidak menyediakan tile di atas level 19
                 })
             );
 
