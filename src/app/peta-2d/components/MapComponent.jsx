@@ -9,6 +9,9 @@ import Search from "../widgets/Search";
 import FullScreen from "../widgets/FullScreen";
 import Bahasa from "../widgets/Bahasa";
 import Katalog from "../widgets/Katalog";
+import Legend from "../widgets/Legend";
+import Basemap from "../widgets/Basemap";
+import Zoom from "../widgets/Zoom";
 
 const HOME_COORDS = { lat: -6.1754, lng: 106.8272, zoom: 16 };
 
@@ -39,6 +42,8 @@ export default function MapComponent() {
 
   const [bahasa, setBahasa] = useState("ID");
   const [ready, setReady] = useState(false);
+  const [activeLayers, setActiveLayers] = useState([]);
+  const [activeBasemap, setActiveBasemap] = useState(DEFAULT_BASEMAP);
 
   useEffect(() => {
     let cancelled = false;
@@ -94,7 +99,6 @@ export default function MapComponent() {
     <Box sx={{ position: "relative", width: "100%", height: "100dvh" }}>
       <Box ref={mapContainerRef} sx={{ width: "100%", height: "100%" }} />
 
-      {/* Kontrol kanan atas */}
       <Box
         sx={{
           position: "absolute",
@@ -116,6 +120,7 @@ export default function MapComponent() {
             buttonSize={BUTTON_SIZE}
             tooltip="left"
           />
+          
           <FullScreen buttonSize={BUTTON_SIZE} tooltip="bottom" />
           <Bahasa
             buttonSize={BUTTON_SIZE}
@@ -130,7 +135,6 @@ export default function MapComponent() {
         </Box>
       </Box>
 
-      {/* Katalog kiri atas */}
       <Box
         sx={{
           position: "absolute",
@@ -143,7 +147,33 @@ export default function MapComponent() {
           map={map}
           addedLayersRef={addedLayersRef}
           buttonSize={BUTTON_SIZE}
+          onActiveLayersChange={setActiveLayers}
         />
+      </Box>
+
+      <Box
+        sx={{
+          position: "absolute",
+          bottom: { xs: 24, md: 20 },
+          right: { xs: 24, md: 20 },
+          zIndex: 1000,
+          gap: 2, 
+          padding: 2,
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <Legend activeLayers={activeLayers} dropdownSide="left" />
+        <Basemap
+            L={L}
+            map={map}
+            tileLayerRef={tileLayerRef}
+            basemaps={BASEMAPS}
+            activeBasemap={activeBasemap}
+            onChangeBasemap={setActiveBasemap}
+            buttonSize={BUTTON_SIZE}
+          />
+        <Zoom map={map} buttonSize={BUTTON_SIZE} />
       </Box>
     </Box>
   );

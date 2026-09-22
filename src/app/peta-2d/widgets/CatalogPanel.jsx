@@ -59,7 +59,7 @@ const formatLayerName = (name) => {
     .join(" ");
 };
 
-export default function CatalogPanel({ open, map, addedLayersRef }) {
+export default function CatalogPanel({ open, map, addedLayersRef, onActiveLayersChange }) {
   const leafletRef = useRef(null);
   const [layers, setLayers] = useState([]);
   const [search, setSearch] = useState("");
@@ -91,6 +91,19 @@ export default function CatalogPanel({ open, map, addedLayersRef }) {
     };
     fetchData();
   }, []);
+
+   useEffect(() => {
+    if (!onActiveLayersChange) return;
+    const active = layers
+      .filter((item) => activeIds.includes(item.data_2d_id))
+      .map((item) => ({
+        id: item.data_2d_id,
+        layer_name: item.layer_name,
+        wms_url: item.wms_url,
+        label: formatLayerName(item.layer_name),
+      }));
+    onActiveLayersChange(active);
+  }, [activeIds, layers, onActiveLayersChange]);
 
   const toggleLayer = (item) => {
     const L = leafletRef.current;

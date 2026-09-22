@@ -1,59 +1,43 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Box, Paper, IconButton, Tooltip, Fade } from "@mui/material";
 import LayersIcon from "@mui/icons-material/Layers";
 
-const BASEMAPS = {
-  satelit: {
-    label: "Citra Satelit",
-    create: (Cesium) =>
-      new Cesium.ArcGisMapServerImageryProvider({
-        url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer",
-      }),
-  },
-  jalan: {
-    label: "Peta Jalan (OSM)",
-    create: (Cesium) =>
-      new Cesium.UrlTemplateImageryProvider({
-        url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        subdomains: ["a", "b", "c"],
-        credit: "© OpenStreetMap contributors",
-        maximumLevel: 19, 
-      }),
-  },
-};
-
-export default function Basemap({ viewer, activeBasemap, onChangeBasemap }) {
+export default function Basemap({
+  L,
+  map,
+  tileLayerRef,
+  basemaps,
+  activeBasemap,
+  onChangeBasemap,
+  buttonSize = 40,
+}) {
   const [basemapOpen, setBasemapOpen] = useState(false);
-
-  useEffect(() => {
-    if (!viewer || viewer.isDestroyed()) return;
-    if (viewer.imageryLayers.length > 0) return; 
-
-    const Cesium = window.Cesium;
-    const provider = BASEMAPS[activeBasemap]?.create(Cesium);
-    if (provider) {
-      viewer.imageryLayers.addImageryProvider(provider);
-    }
-  }, [viewer]);
 
   const handleChangeBasemap = useCallback(
     (key) => {
-      if (!viewer || viewer.isDestroyed()) return;
-      const Cesium = window.Cesium;
-
-      viewer.imageryLayers.removeAll(true);
-
-      const provider = BASEMAPS[key]?.create(Cesium);
-      if (provider) {
-        viewer.imageryLayers.addImageryProvider(provider);
+      if (!L || !map || key === activeBasemap) {
+        setBasemapOpen(false);
+        return;
       }
+
+      const bm = basemaps[key];
+      if (!bm) return;
+
+      if (tileLayerRef.current) {
+        map.removeLayer(tileLayerRef.current);
+      }
+
+      tileLayerRef.current = L.tileLayer(bm.url, {
+        attribution: bm.attribution,
+        maxZoom: 19,
+      }).addTo(map);
 
       onChangeBasemap(key);
       setBasemapOpen(false);
     },
-    [viewer, onChangeBasemap]
+    [L, map, basemaps, activeBasemap, onChangeBasemap, tileLayerRef]
   );
 
   return (
@@ -64,8 +48,8 @@ export default function Basemap({ viewer, activeBasemap, onChangeBasemap }) {
           component={IconButton}
           onClick={() => setBasemapOpen((o) => !o)}
           sx={{
-            width: 40,
-            height: 40,
+            width: buttonSize,
+            height: buttonSize,
             borderRadius: 1.5,
             bgcolor: basemapOpen ? "#D98E3B" : "#0F2A24",
             color: basemapOpen ? "#0F2A24" : "#F4EFE2",
@@ -82,14 +66,15 @@ export default function Basemap({ viewer, activeBasemap, onChangeBasemap }) {
           sx={{
             position: "absolute",
             top: 0,
-            right: 48,
+            right: buttonSize + 8,
             width: 190,
             borderRadius: 2,
             bgcolor: "#F7F3E7",
             overflow: "hidden",
+            display: basemapOpen ? "block" : "none",
           }}
         >
-          {Object.entries(BASEMAPS).map(([key, bm]) => (
+          {Object.entries(basemaps).map(([key, bm]) => (
             <Box
               key={key}
               onClick={() => handleChangeBasemap(key)}
