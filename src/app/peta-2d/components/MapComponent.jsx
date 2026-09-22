@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Box } from "@mui/material";
 
 import Home from "../widgets/Home";
@@ -12,7 +12,6 @@ import Katalog from "../widgets/Katalog";
 import Legend from "../widgets/Legend";
 import Basemap from "../widgets/Basemap";
 import Zoom from "../widgets/Zoom";
-import PopUp from "../widgets/Popup";
 
 const HOME_COORDS = { lat: -6.1754, lng: 106.8272, zoom: 16 };
 
@@ -45,9 +44,6 @@ export default function MapComponent() {
   const [ready, setReady] = useState(false);
   const [activeLayers, setActiveLayers] = useState([]);
   const [activeBasemap, setActiveBasemap] = useState(DEFAULT_BASEMAP);
-
-  const [clickLatLng, setClickLatLng] = useState(null);
-  const [clickScreenPos, setClickScreenPos] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -83,19 +79,6 @@ export default function MapComponent() {
         maxZoom: 19,
       }).addTo(map);
 
-      map.on("click", (e) => {
-        setClickLatLng(e.latlng);
-        setClickScreenPos(map.latLngToContainerPoint(e.latlng));
-      });
-
-      map.on("move", () => {
-        setClickScreenPos((prev) => {
-          if (!prev) return prev;
-          const current = mapRef.current?.getCenter ? clickLatLngRef.current : null;
-          return current ? map.latLngToContainerPoint(current) : prev;
-        });
-      });
-
       mapRef.current = map;
       setReady(true);
     })();
@@ -107,32 +90,6 @@ export default function MapComponent() {
         mapRef.current = null;
       }
     };
-  }, []);
-
-  const clickLatLngRef = useRef(null);
-  useEffect(() => {
-    clickLatLngRef.current = clickLatLng;
-  }, [clickLatLng]);
-
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
-
-    const handleMove = () => {
-      if (clickLatLngRef.current) {
-        setClickScreenPos(map.latLngToContainerPoint(clickLatLngRef.current));
-      }
-    };
-
-    map.on("move zoom", handleMove);
-    return () => {
-      map.off("move zoom", handleMove);
-    };
-  }, [ready]);
-
-  const handleClosePopup = useCallback(() => {
-    setClickLatLng(null);
-    setClickScreenPos(null);
   }, []);
 
   const L = ready ? leafletRef.current : null;
@@ -163,6 +120,7 @@ export default function MapComponent() {
             buttonSize={BUTTON_SIZE}
             tooltip="left"
           />
+          
           <FullScreen buttonSize={BUTTON_SIZE} tooltip="bottom" />
           <Bahasa
             buttonSize={BUTTON_SIZE}
@@ -199,7 +157,7 @@ export default function MapComponent() {
           bottom: { xs: 24, md: 20 },
           right: { xs: 24, md: 20 },
           zIndex: 1000,
-          gap: 2,
+          gap: 2, 
           padding: 2,
           display: "flex",
           flexDirection: "column",
@@ -207,38 +165,16 @@ export default function MapComponent() {
       >
         <Legend activeLayers={activeLayers} dropdownSide="left" />
         <Basemap
-          L={L}
-          map={map}
-          tileLayerRef={tileLayerRef}
-          basemaps={BASEMAPS}
-          activeBasemap={activeBasemap}
-          onChangeBasemap={setActiveBasemap}
-          buttonSize={BUTTON_SIZE}
-        />
-        <Zoom map={map} buttonSize={BUTTON_SIZE} />
-      </Box>
-
-      {clickLatLng && clickScreenPos && (
-        <Box
-          sx={{
-            position: "absolute",
-            left: clickScreenPos.x,
-            top: clickScreenPos.y,
-            transform: "translate(-50%, -110%)",
-            zIndex: 1200,
-            pointerEvents: "none",
-            "& > *": { pointerEvents: "auto" },
-          }}
-        >
-          <PopUp
             L={L}
             map={map}
-            addedLayersRef={addedLayersRef}
-            clickLatLng={clickLatLng}
-            setClickLatLng={handleClosePopup}
+            tileLayerRef={tileLayerRef}
+            basemaps={BASEMAPS}
+            activeBasemap={activeBasemap}
+            onChangeBasemap={setActiveBasemap}
+            buttonSize={BUTTON_SIZE}
           />
-        </Box>
-      )}
+        <Zoom map={map} buttonSize={BUTTON_SIZE} />
+      </Box>
     </Box>
   );
 }
