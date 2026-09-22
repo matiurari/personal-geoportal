@@ -11,6 +11,7 @@ import Search from '../widgets/Search';
 import Bahasa from '../widgets/Bahasa';
 import Katalog3D from '../widgets/Katalog3D';
 import Zoom from '../widgets/Zoom';
+import CameraNav from '../widgets/CameraNav';
 
 
 const CESIUM_VERSION = '1.120';
@@ -193,6 +194,18 @@ export default function CesiumViewer() {
               onChangeBasemap={setActiveBasemap}
             />
             <Zoom viewer={viewer} buttonSize={40} />
+          </Box>
+
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: { xs: 24, md: 32 },
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 1000,
+            }}
+          >
+            <CameraNav viewer={viewer} lokasiAwal={LOKASI_AWAL} buttonSize={40} />
           </Box>
         </>
       )}
